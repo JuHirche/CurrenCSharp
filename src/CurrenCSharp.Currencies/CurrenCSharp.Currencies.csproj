@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<LangVersion>14.0</LangVersion>
+		<PackageId>CurrenCSharp.Currencies</PackageId>
+		<Description>ISO 4217 currency catalog for CurrenCSharp with predefined currencies and lookup helpers.</Description>
+		<PackageTags>money;currency;finance;iso4217;exchange-rate;dotnet</PackageTags>
+		<MinVerTagPrefix>CurrenCSharp.Currencies_v</MinVerTagPrefix>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(AssemblyName).Test" />
+		<ProjectReference Include="..\..\src\CurrenCSharp\CurrenCSharp.csproj" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+		<PackageReference Include="MinVer">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+</Project>

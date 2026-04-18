@@ -1,0 +1,30 @@
+<Solution>
+  <Folder Name="/example/">
+    <Project Path="example/CurrenCSharp.Example/CurrenCSharp.Example.csproj" Id="5c68ef26-2487-490f-8e84-2724ecb849b1" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/CurrenCSharp.Currencies/CurrenCSharp.Currencies.csproj" Id="45bec019-9bf2-4eb0-9f01-25cbb3767596" />
+    <Project Path="src/CurrenCSharp/CurrenCSharp.csproj" Id="da217cbe-d6fe-4b5e-8b0b-0a4037f4ef7f" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/CurrenCSharp.Benchmark/CurrenCSharp.Benchmark.csproj" Id="eb6f7f59-a220-4acb-9e1f-e1844e613cc7" />
+    <Project Path="test/CurrenCSharp.Currencies.Test/CurrenCSharp.Currencies.Test.csproj" Id="b84d56ab-6252-4b94-be20-8f60d80325d5" />
+    <Project Path="test/CurrenCSharp.Test/CurrenCSharp.Test.csproj" Id="dab4d869-da78-4eb8-ae0b-2f23da195eca" />
+  </Folder>
+  <Folder Name="/_files/">
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE" />
+    <File Path="NuGet.Config" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/_files/agents/">
+    <File Path="agents/code-reviewer.md" />
+  </Folder>
+  <Folder Name="/_files/workflows/">
+    <File Path=".github/workflows/build.yaml" />
+    <File Path=".github/workflows/publish.yaml" />
+  </Folder>
+</Solution>

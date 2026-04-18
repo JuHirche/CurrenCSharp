@@ -1,0 +1,40 @@
+name: 📦 Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        filter: tree:0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
+    - name: Pack CurrenCSharp package
+      run: dotnet pack ./src/CurrenCSharp/CurrenCSharp.csproj --configuration Release --no-build -o ./nupkg
+    # - name: Pack CurrenCSharp.Currencies package
+    #   run: dotnet pack ./src/CurrenCSharp.Currencies/CurrenCSharp.Currencies.csproj --configuration Release --no-build -o ./nupkg
+    - name: Publish package to NuGet
+      env:
+        NUGET_API_KEY: ${{ secrets.INT_NUGET_API_KEY }}
+        NUGET_SOURCE: https://apiint.nugettest.org/v3/index.json
+      run: dotnet nuget push ./nupkg/*.nupkg --skip-duplicate --api-key "$NUGET_API_KEY" --source "$NUGET_SOURCE"
