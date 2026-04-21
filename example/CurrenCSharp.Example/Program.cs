@@ -30,7 +30,7 @@ Wallet collection = Wallet.Of([eur_47_11, usd_47_11, chf_47_11]); // Wallet crea
 
 // 4. Create an exchange rate provider and load contexts.
 IExchangeRateProvider provider = new ExampleExchangeRateProvider();
-DateTimeOffset exchangeRateDate = new(new DateTime(2020, 1, 1), TimeSpan.Zero);
+DateTimeOffset exchangeRateDate = new(new DateTime(2020, 1, 2), TimeSpan.Zero);
 
 ExchangeRateContext latest     = await provider.GetLatestAsync();                     // latest exchange rates for the current date
 ExchangeRateContext historical = await provider.GetHistoricalAsync(exchangeRateDate); // historical exchange rates for January 1st, 2020
@@ -43,12 +43,12 @@ ContextedWallet latest_wallet     = collection.In(latest);
 ContextedWallet historical_wallet = collection.In(historical);
 
 // 6. Convert a ContextedMoney to a different currency using the exchange rates from the context.
-Money latest_money_usd     = latest_money.Convert(Iso4217.USD);     // USD 51.41
-Money historical_money_usd = historical_money.Convert(Iso4217.USD); // USD 42.08
+Money latest_money_usd     = latest_money.Convert(Iso4217.USD);     // USD 55.40
+Money historical_money_usd = historical_money.Convert(Iso4217.USD); // USD 52.73
 
 // 7. Calculate total wallet value in a specific currency using the exchange rates from the context.
-Money latest_total_KeyCurrency = latest_wallet.Total();            // EUR 140.10
-Money latest_total_usd         = latest_wallet.Total(Iso4217.USD); // USD 152.87
+Money latest_total_KeyCurrency = latest_wallet.Total();            // EUR 138.44
+Money latest_total_usd         = latest_wallet.Total(Iso4217.USD); // USD 162.80
 
 // 8. Arithmetic operations
 // 8.1. Operations on money objects (must be the same currency, otherwise the operation will throw an exception)
