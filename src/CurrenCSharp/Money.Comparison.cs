@@ -70,10 +70,12 @@ public readonly partial record struct Money : IComparable<Money>, IComparable<Co
 
     /// <summary>
     /// Determines whether one monetary value is less than another monetary value.
+    /// Throws <see cref="DifferentCurrencyException"/> when both values use different currencies.
     /// </summary>
     /// <param name="left">The left monetary value.</param>
     /// <param name="right">The right monetary value.</param>
     /// <returns><see langword="true"/> if <paramref name="left"/> is less than <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="DifferentCurrencyException">Thrown when <paramref name="left"/> and <paramref name="right"/> have different currencies.</exception>
     public static bool operator <(Money left, Money right) => left.CompareTo(right) < 0;
 
     /// <summary>
@@ -110,10 +112,12 @@ public readonly partial record struct Money : IComparable<Money>, IComparable<Co
 
     /// <summary>
     /// Determines whether one monetary value is less than or equal to another monetary value.
+    /// Throws <see cref="DifferentCurrencyException"/> when both values use different currencies.
     /// </summary>
     /// <param name="left">The left monetary value.</param>
     /// <param name="right">The right monetary value.</param>
     /// <returns><see langword="true"/> if <paramref name="left"/> is less than or equal to <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="DifferentCurrencyException">Thrown when <paramref name="left"/> and <paramref name="right"/> have different currencies.</exception>
     public static bool operator <=(Money left, Money right) => left.CompareTo(right) <= 0;
 
     /// <summary>
@@ -150,10 +154,12 @@ public readonly partial record struct Money : IComparable<Money>, IComparable<Co
 
     /// <summary>
     /// Determines whether one monetary value is greater than another monetary value.
+    /// Throws <see cref="DifferentCurrencyException"/> when both values use different currencies.
     /// </summary>
     /// <param name="left">The left monetary value.</param>
     /// <param name="right">The right monetary value.</param>
     /// <returns><see langword="true"/> if <paramref name="left"/> is greater than <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="DifferentCurrencyException">Thrown when <paramref name="left"/> and <paramref name="right"/> have different currencies.</exception>
     public static bool operator >(Money left, Money right) => left.CompareTo(right) > 0;
 
     /// <summary>
@@ -190,10 +196,12 @@ public readonly partial record struct Money : IComparable<Money>, IComparable<Co
 
     /// <summary>
     /// Determines whether one monetary value is greater than or equal to another monetary value.
+    /// Throws <see cref="DifferentCurrencyException"/> when both values use different currencies.
     /// </summary>
     /// <param name="left">The left monetary value.</param>
     /// <param name="right">The right monetary value.</param>
     /// <returns><see langword="true"/> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="DifferentCurrencyException">Thrown when <paramref name="left"/> and <paramref name="right"/> have different currencies.</exception>
     public static bool operator >=(Money left, Money right) => left.CompareTo(right) >= 0;
 
     /// <summary>
@@ -230,12 +238,14 @@ public readonly partial record struct Money : IComparable<Money>, IComparable<Co
 
     /// <summary>
     /// Compares this monetary value with another monetary value.
+    /// Throws <see cref="DifferentCurrencyException"/> when both values use different currencies.
     /// </summary>
     /// <param name="other">The monetary value to compare with this instance.</param>
     /// <returns>
     /// A value less than zero if this instance is less than <paramref name="other"/>,
     /// zero if both are equal, or greater than zero if this instance is greater.
     /// </returns>
+    /// <exception cref="DifferentCurrencyException">Thrown when this instance and <paramref name="other"/> have different currencies.</exception>
     public int CompareTo(Money other)
     {
         DifferentCurrencyException.ThrowIfDifferent(Currency, other.Currency);
