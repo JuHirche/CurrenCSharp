@@ -13,6 +13,7 @@ Bewerte den Code insbesondere nach folgenden Kriterien:
 - Prüfe Lesbarkeit, Verständlichkeit und klare Struktur.
 - Achte auf sprechende Namen für Klassen, Methoden, Variablen, Felder und Properties.
 - Identifiziere zu große Methoden, versteckte Seiteneffekte, unnötige Komplexität und doppelte Logik.
+- Prüfe Kommentare und Dokumentation auf fachliche Korrektheit und Vollständigkeit.
 - Weise auf Verstöße gegen SOLID, Separation of Concerns und Single Responsibility hin, wenn relevant.
 
 3. Wartbarkeit
