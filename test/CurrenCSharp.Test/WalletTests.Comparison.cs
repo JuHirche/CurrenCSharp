@@ -3,139 +3,211 @@ namespace CurrenCSharp.Test;
 public sealed partial class WalletTests
 {
     [Fact]
-    public async Task CompareTo_WhenComparingWithContextedMoney_ReturnsExpectedOrdering()
+    public void Equals_WhenInsertionOrderDiffers_ReturnsTrueAndSameHashCode()
     {
         // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var sut = Wallet.Of(new Money(1m, EUR));
-        var other = new Money(1.5m, USD).In(context);
-
-        // Act
-        var result = sut.CompareTo(other);
-
-        // Assert
-        Assert.True(result > 0);
-    }
-
-    [Fact]
-    public async Task CompareTo_WhenComparingWithContextedWallet_ReturnsExpectedOrdering()
-    {
-        // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var sut = Wallet.Of(new Money(1m, EUR));
-        var other = Wallet.Of(new Money(1m, USD)).In(context);
-
-        // Act
-        var result = sut.CompareTo(other);
-
-        // Assert
-        Assert.True(result > 0);
-    }
-
-    [Theory]
-    [InlineData(5, 10)]
-    [InlineData(10, 5)]
-    [InlineData(10, 10)]
-    public async Task EqualityOperator_WhenComparingAcrossSupportedOverloads_ReturnsExpectedResult(decimal leftAmount, decimal rightAmount)
-    {
-        // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var leftWallet = Wallet.Of(new Money(leftAmount, EUR));
-        var rightWallet = Wallet.Of(new Money(rightAmount, EUR));
-        var leftContextedMoney = new Money(leftAmount, USD).In(context);
-        var rightContextedMoney = new Money(rightAmount, USD).In(context);
-        var leftContextedWallet = Wallet.Of(new Money(leftAmount, USD)).In(context);
-        var rightContextedWallet = Wallet.Of(new Money(rightAmount, USD)).In(context);
-        var exchangeRate = (decimal)LatestExchangeRates[USD];
-
-        // Act
-        var walletContextedWallet = leftWallet == rightContextedWallet;
-        var contextedWalletWallet = leftContextedWallet == rightWallet;
-        var walletContextedMoney = leftWallet == rightContextedMoney;
-        var contextedMoneyWallet = leftContextedMoney == rightWallet;
-
-        // Assert
-        Assert.Equal(leftAmount == rightAmount / exchangeRate, walletContextedWallet);
-        Assert.Equal(leftAmount / exchangeRate == rightAmount, contextedWalletWallet);
-        Assert.Equal(leftAmount == rightAmount / exchangeRate, walletContextedMoney);
-        Assert.Equal(leftAmount / exchangeRate == rightAmount, contextedMoneyWallet);
-    }
-
-    [Theory]
-    [InlineData(5, 10)]
-    [InlineData(10, 5)]
-    [InlineData(10, 10)]
-    public async Task InequalityOperator_WhenComparingAcrossSupportedOverloads_ReturnsExpectedResult(decimal leftAmount, decimal rightAmount)
-    {
-        // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var leftWallet = Wallet.Of(new Money(leftAmount, EUR));
-        var rightWallet = Wallet.Of(new Money(rightAmount, EUR));
-        var leftContextedMoney = new Money(leftAmount, USD).In(context);
-        var rightContextedMoney = new Money(rightAmount, USD).In(context);
-        var leftContextedWallet = Wallet.Of(new Money(leftAmount, USD)).In(context);
-        var rightContextedWallet = Wallet.Of(new Money(rightAmount, USD)).In(context);
-        var exchangeRate = (decimal)LatestExchangeRates[USD];
-
-        // Act
-        var walletContextedWallet = leftWallet != rightContextedWallet;
-        var contextedWalletWallet = leftContextedWallet != rightWallet;
-        var walletContextedMoney = leftWallet != rightContextedMoney;
-        var contextedMoneyWallet = leftContextedMoney != rightWallet;
-
-        // Assert
-        Assert.Equal(leftAmount != rightAmount / exchangeRate, walletContextedWallet);
-        Assert.Equal(leftAmount / exchangeRate != rightAmount, contextedWalletWallet);
-        Assert.Equal(leftAmount != rightAmount / exchangeRate, walletContextedMoney);
-        Assert.Equal(leftAmount / exchangeRate != rightAmount, contextedMoneyWallet);
-    }
-
-    [Theory]
-    [InlineData(5, 10)]
-    [InlineData(10, 5)]
-    [InlineData(10, 10)]
-    public async Task EqualityOperator_WhenOperandsAreSwapped_ReturnsSameResult(decimal leftAmount, decimal rightAmount)
-    {
-        // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var wallet = Wallet.Of(new Money(leftAmount, EUR));
-        var contextedMoney = new Money(rightAmount, USD).In(context);
-        var contextedWallet = Wallet.Of(new Money(rightAmount, USD)).In(context);
+        var left = Wallet.Of(new Money(1m, EUR), new Money(2m, USD));
+        var right = Wallet.Of(new Money(2m, USD), new Money(1m, EUR));
 
         // Act & Assert
-        Assert.Equal(wallet == contextedWallet, contextedWallet == wallet);
-        Assert.Equal(wallet != contextedWallet, contextedWallet != wallet);
-        Assert.Equal(wallet == contextedMoney, contextedMoney == wallet);
-        Assert.Equal(wallet != contextedMoney, contextedMoney != wallet);
+        Assert.Equal(left, right);
+        Assert.Equal(left.GetHashCode(), right.GetHashCode());
     }
 
     [Fact]
-    public async Task LessThanOperator_WhenWalletTotalIsLessThanContextedMoney_ReturnsTrue()
+    public void Equals_WhenComparedWithNull_ReturnsFalse()
     {
         // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var left = Wallet.Of(new Money(1m, EUR));
-        var right = new Money(3m, USD).In(context);
+        var sut = Wallet.Of(new Money(1m, EUR));
 
-        // Act
-        var result = left < right;
-
-        // Assert
-        Assert.True(result);
+        // Act & Assert
+        Assert.False(sut.Equals((Wallet?)null));
+        Assert.False(sut.Equals((object?)null));
     }
 
     [Fact]
-    public async Task GreaterThanOperator_WhenWalletTotalIsGreaterThanContextedWalletTotal_ReturnsTrue()
+    public void Equals_WhenComparedWithDifferentType_ReturnsFalse()
     {
         // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var left = Wallet.Of(new Money(2m, EUR));
-        var right = Wallet.Of(new Money(1m, USD)).In(context);
+        var sut = Wallet.Of(new Money(1m, EUR));
+
+        // Act & Assert
+        Assert.False(sut.Equals((object)"some string"));
+    }
+
+    [Fact]
+    public void CompareTo_WhenContextedMoneyIsNull_ReturnsPositiveValue()
+    {
+        // Arrange
+        var sut = Wallet.Of(new Money(1m, EUR));
 
         // Act
-        var result = left > right;
+        var result = sut.CompareTo((ContextedMoney?)null);
 
         // Assert
-        Assert.True(result);
+        Assert.True(result > 0);
+    }
+
+    [Fact]
+    public void CompareTo_WhenContextedWalletIsNull_ReturnsPositiveValue()
+    {
+        // Arrange
+        var sut = Wallet.Of(new Money(1m, EUR));
+
+        // Act
+        var result = sut.CompareTo((ContextedWallet?)null);
+
+        // Assert
+        Assert.True(result > 0);
+    }
+
+    [Fact]
+    public void CompareTo_WhenWalletTotalEqualsContextedMoney_ReturnsZero()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates); // EUR->USD=2
+        var sut = Wallet.Of(new Money(50m, EUR), new Money(50m, USD)); // 50 EUR + 50 USD = 50+25 = 75 EUR = 150 USD
+        var other = new Money(150m, USD).In(context);
+
+        // Act
+        var result = sut.CompareTo(other);
+
+        // Assert
+        Assert.Equal(0, result);
+    }
+
+    [Fact]
+    public void CompareTo_WhenBothTotalsConvertedToSameCurrency_ComparesTotals()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates); // EUR->USD=2
+        var sut = Wallet.Of(new Money(10m, EUR));
+        var other = Wallet.Of(new Money(9m, EUR), new Money(1m, USD)).In(context); // 9 EUR + 0.5 EUR = 9.50 EUR
+
+        // Act
+        var result = sut.CompareTo(other);
+
+        // Assert
+        Assert.True(result > 0); // 10 EUR > 9.50 EUR
+    }
+
+    [Fact]
+    public void EqualityOperators_WithContextedWallet_ReturnExpectedResult()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        var wallet = Wallet.Of(new Money(10m, EUR));
+        var equal = Wallet.Of(new Money(10m, EUR)).In(context);
+        var different = Wallet.Of(new Money(11m, EUR)).In(context);
+
+        // Act & Assert
+        Assert.True(wallet == equal);
+        Assert.False(wallet != equal);
+        Assert.False(wallet == different);
+        Assert.True(wallet != different);
+
+        // Reversed
+        Assert.True(equal == wallet);
+        Assert.False(different == wallet);
+    }
+
+    [Fact]
+    public void EqualityOperators_WithContextedMoney_ReturnExpectedResult()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates); // EUR->USD=2
+        var wallet = Wallet.Of(new Money(50m, EUR), new Money(50m, USD));
+        var equal = new Money(150m, USD).In(context);
+        var different = new Money(151m, USD).In(context);
+
+        // Act & Assert
+        Assert.True(wallet == equal);
+        Assert.False(wallet != equal);
+        Assert.False(wallet == different);
+        Assert.True(wallet != different);
+
+        // Reversed
+        Assert.True(equal == wallet);
+        Assert.False(different == wallet);
+    }
+
+    [Fact]
+    public void OrderOperators_WithContextedMoney_ReturnExpectedResult()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        var wallet = Wallet.Of(new Money(10m, EUR));
+        var smaller = new Money(5m, EUR).In(context);
+        var equal = new Money(10m, EUR).In(context);
+        var larger = new Money(15m, EUR).In(context);
+
+        // Act & Assert
+        Assert.True(wallet > smaller);
+        Assert.True(wallet >= equal);
+        Assert.True(wallet < larger);
+        Assert.True(wallet <= equal);
+
+        Assert.True(smaller < wallet);
+        Assert.True(larger > wallet);
+    }
+
+    [Fact]
+    public void OrderOperators_WithContextedWallet_ReturnExpectedResult()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        var sut = Wallet.Of(new Money(10m, EUR));
+        var smaller = Wallet.Of(new Money(5m, EUR)).In(context);
+        var equal = Wallet.Of(new Money(10m, EUR)).In(context);
+        var larger = Wallet.Of(new Money(15m, EUR)).In(context);
+
+        // Act & Assert
+        Assert.True(sut > smaller);
+        Assert.True(sut >= equal);
+        Assert.True(sut < larger);
+        Assert.True(sut <= equal);
+    }
+
+    [Fact]
+    public void ComparisonOperators_WhenAnyReferenceOperandIsNull_ReturnExpectedResult()
+    {
+        // Arrange
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        Wallet walletNull = null!;
+        ContextedMoney contextedMoneyNull = null!;
+        ContextedWallet contextedWalletNull = null!;
+        var wallet = Wallet.Of(new Money(1m, EUR));
+        var contextedMoney = new Money(1m, USD).In(context);
+        var contextedWallet = Wallet.Of(new Money(1m, USD)).In(context);
+
+        // Act & Assert — null wallet against contexted types
+        Assert.False(walletNull == contextedMoney);
+        Assert.True(walletNull != contextedMoney);
+        Assert.False(walletNull < contextedMoney);
+        Assert.False(walletNull <= contextedMoney);
+        Assert.False(walletNull > contextedMoney);
+        Assert.False(walletNull >= contextedMoney);
+
+        Assert.False(walletNull == contextedWallet);
+        Assert.True(walletNull != contextedWallet);
+        Assert.False(walletNull < contextedWallet);
+
+        // null ContextedMoney/ContextedWallet against wallet
+        Assert.False(wallet == contextedMoneyNull);
+        Assert.True(wallet != contextedMoneyNull);
+        Assert.False(wallet < contextedMoneyNull);
+        Assert.False(wallet <= contextedMoneyNull);
+        Assert.False(wallet > contextedMoneyNull);
+        Assert.False(wallet >= contextedMoneyNull);
+
+        Assert.False(wallet == contextedWalletNull);
+        Assert.True(wallet != contextedWalletNull);
+        Assert.False(wallet < contextedWalletNull);
+
+        // Reversed
+        Assert.False(contextedMoneyNull == wallet);
+        Assert.True(contextedMoneyNull != wallet);
+        Assert.False(contextedMoney == walletNull);
+        Assert.True(contextedMoney != walletNull);
     }
 }

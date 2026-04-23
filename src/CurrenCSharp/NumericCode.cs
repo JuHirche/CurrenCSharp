@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace CurrenCSharp;
 
@@ -41,7 +42,11 @@ public sealed record NumericCode
     /// <param name="result">When this method returns, contains the parsed code if parsing succeeds; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if parsing succeeds; otherwise, <see langword="false"/>.</returns>
     public static bool TryParse(string? s, [NotNullWhen(true)] out NumericCode? result) =>
-        (result = s is not null && int.TryParse(s, out var value) && IsValid(value) ? new(value) : null) is not null;
+        (result = s is not null
+                  && int.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out var value)
+                  && IsValid(value)
+            ? new(value)
+            : null) is not null;
 
     private static bool IsValid(int value) => value is >= 0 and <= 999;
 
