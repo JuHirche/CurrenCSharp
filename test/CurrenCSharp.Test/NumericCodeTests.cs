@@ -3,96 +3,134 @@ namespace CurrenCSharp.Test;
 public sealed class NumericCodeTests
 {
     [Theory]
-    [InlineData(0)]
-    [InlineData(978)]
-    [InlineData(999)]
-    public void Constructor_WhenValueIsInRange_SetsValue(int value)
+    [InlineData(-1)]
+    [InlineData(1000)]
+    [InlineData(int.MinValue)]
+    [InlineData(int.MaxValue)]
+    public void Constructor_WhenValueIsOutOfRange_ThrowsArgumentOutOfRangeException(int value)
     {
-        // Arrange & Act
-        var result = new NumericCode(value);
-
-        // Assert
-        Assert.Equal(value, result.Value);
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => new NumericCode(value));
     }
 
     [Theory]
-    [InlineData(-1)]
-    [InlineData(1000)]
-    public void Constructor_WhenValueIsOutOfRange_ThrowsArgumentOutOfRangeException(int value)
+    [InlineData(0)]
+    [InlineData(999)]
+    public void Constructor_WhenValueIsAtBoundary_Succeeds(int value)
     {
-        // Arrange & Act
-        var exception = Record.Exception(() => _ = new NumericCode(value));
+        // Act
+        var code = new NumericCode(value);
 
         // Assert
-        Assert.IsType<ArgumentOutOfRangeException>(exception);
+        Assert.Equal(value, code.Value);
     }
 
-    [Fact]
-    public void Parse_WhenValueIsValid_ReturnsNumericCode()
+    [Theory]
+    [InlineData("978", 978)]
+    [InlineData("840", 840)]
+    [InlineData("007", 7)]
+    public void Parse_WhenValueIsValid_ReturnsNumericCode(string value, int expected)
     {
-        // Arrange & Act
-        var result = NumericCode.Parse("978");
+        // Act
+        var result = NumericCode.Parse(value);
 
         // Assert
-        Assert.Equal(978, result.Value);
+        Assert.Equal(expected, result.Value);
     }
 
-    [Fact]
-    public void Parse_WhenValueIsInvalid_ThrowsFormatException()
+    [Theory]
+    [InlineData("ABC")]
+    [InlineData("1000")]
+    public void Parse_WhenValueIsInvalid_ThrowsFormatException(string value)
     {
-        // Arrange & Act
-        var exception = Record.Exception(() => _ = NumericCode.Parse("ABC"));
-
-        // Assert
-        Assert.IsType<FormatException>(exception);
+        // Act & Assert
+        Assert.Throws<FormatException>(() => NumericCode.Parse(value));
     }
 
     [Fact]
     public void Parse_WhenValueIsNull_ThrowsArgumentNullException()
     {
-        // Arrange
-        string value = null!;
-
-        // Act
-        var exception = Record.Exception(() => _ = NumericCode.Parse(value));
-
-        // Assert
-        Assert.IsType<ArgumentNullException>(exception);
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => NumericCode.Parse(null!));
     }
 
-    [Fact]
-    public void TryParse_WhenValueIsValid_ReturnsTrueAndResult()
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("-978")]
+    public void Parse_WhenInputIsNegative_ThrowsFormatException(string value)
     {
-        // Arrange & Act
-        var success = NumericCode.TryParse("840", out var result);
+        // Act & Assert
+        Assert.Throws<FormatException>(() => NumericCode.Parse(value));
+    }
+
+    [Theory]
+    [InlineData(" 978")]
+    [InlineData("+978")]
+    [InlineData("\u0669\u0667\u0668")] // Arabic-Indic 978
+    public void Parse_WhenInputIsNonCanonical_RejectsAmbiguousFormats(string value)
+    {
+        // Act & Assert
+        Assert.Throws<FormatException>(() => NumericCode.Parse(value));
+    }
+
+    [Theory]
+    [InlineData("007", 7)]
+    [InlineData("840", 840)]
+    [InlineData("000", 0)]
+    [InlineData("999", 999)]
+    public void TryParse_WhenValueIsValid_ReturnsTrueAndResult(string value, int expected)
+    {
+        // Act
+        var success = NumericCode.TryParse(value, out var result);
 
         // Assert
         Assert.True(success);
         Assert.NotNull(result);
-        Assert.Equal(840, result.Value);
+        Assert.Equal(expected, result!.Value);
     }
 
-    [Fact]
-    public void TryParse_WhenValueIsInvalid_ReturnsFalseAndNullResult()
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("1000")]
+    [InlineData("ABC")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void TryParse_WhenValueIsInvalid_ReturnsFalseAndNullResult(string? value)
     {
-        // Arrange & Act
-        var success = NumericCode.TryParse("1000", out var result);
+        // Act
+        var success = NumericCode.TryParse(value, out var result);
 
         // Assert
         Assert.False(success);
         Assert.Null(result);
     }
 
-    [Fact]
-    public void ToString_WhenCalled_ReturnsThreeDigitRepresentation()
+    [Theory]
+    [InlineData(7, "007")]
+    [InlineData(42, "042")]
+    [InlineData(999, "999")]
+    [InlineData(0, "000")]
+    public void ToString_WhenValueHasLeadingZeros_ReturnsThreeDigits(int value, string expected)
     {
         // Arrange
-        var sut = new NumericCode(7);
+        var code = new NumericCode(value);
 
         // Act
-        var result = sut.ToString();
+        var result = code.ToString();
 
         // Assert
-        Assert.Equal("007", result);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Equals_WhenValuesMatch_ReturnsTrueAndSameHashCode()
+    {
+        // Arrange
+        var left = new NumericCode(978);
+        var right = new NumericCode(978);
+
+        // Act & Assert
+        Assert.Equal(left, right);
+        Assert.Equal(left.GetHashCode(), right.GetHashCode());
     }
 }

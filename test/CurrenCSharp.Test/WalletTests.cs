@@ -1,35 +1,71 @@
+using System.Collections;
+using CurrenCSharp.Exceptions;
+
 namespace CurrenCSharp.Test;
 
 public sealed partial class WalletTests : TestFixture
 {
     [Fact]
-    public async Task Total_WhenWalletIsEmptyAndTargetCurrencyIsProvided_ReturnsZeroMoneyInTargetCurrency()
+    public void Empty_WhenAccessed_ReturnsWalletWithoutEntries()
     {
-        // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var sut = Wallet.Empty.In(context);
-
         // Act
-        var result = sut.Total(USD);
+        var sut = Wallet.Empty;
 
         // Assert
-        Assert.Equal(decimal.Zero, result.Amount);
-        Assert.Equal(USD, result.Currency);
+        Assert.Empty(sut);
+    }
+
+    public static TheoryData<Func<Wallet>> NullOfInputs => new()
+    {
+        { () => Wallet.Of((Money[])null!) },
+        { () => Wallet.Of((IReadOnlyCollection<Money>)null!) },
+    };
+
+    [Theory]
+    [MemberData(nameof(NullOfInputs))]
+    public void Of_WhenMoneysIsNull_ThrowsArgumentNullException(Func<Wallet> act)
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(act);
+    }
+
+    public static TheoryData<Func<Wallet>> EmptyOfInputs => new()
+    {
+        { () => Wallet.Of() },
+        { () => Wallet.Of(new List<Money>()) },
+    };
+
+    [Theory]
+    [MemberData(nameof(EmptyOfInputs))]
+    public void Of_WhenInputIsEmpty_ReturnsEmptyWallet(Func<Wallet> act)
+    {
+        // Act
+        var result = act();
+
+        // Assert
+        Assert.Empty(result);
     }
 
     [Fact]
-    public async Task Total_WhenWalletIsEmptyAndTargetCurrencyIsNotProvided_ReturnsZeroMoneyInDefaultCurrency()
+    public void Of_WhenSameCurrencyAppearsMultipleTimes_AggregatesAmounts()
     {
-        // Arrange
-        var context = await ExchangeRateProvider.GetLatestAsync(TestContext.Current.CancellationToken);
-        var sut = Wallet.Empty.In(context);
-
         // Act
-        var result = sut.Total();
+        var sut = Wallet.Of(new Money(1m, EUR), new Money(2m, EUR), new Money(3m, EUR));
 
         // Assert
-        Assert.Equal(decimal.Zero, result.Amount);
-        Assert.Equal(EUR, result.Currency);
+        var single = Assert.Single(sut);
+        Assert.Equal(6m, single.Amount);
+        Assert.Equal(EUR, single.Currency);
+    }
+
+    [Fact]
+    public void Of_WhenAmountsCancelOut_ReturnsEmptyWallet()
+    {
+        // Act
+        var sut = Wallet.Of(new Money(10m, EUR), new Money(-10m, EUR));
+
+        // Assert
+        Assert.Empty(sut);
     }
 
     [Fact]
@@ -37,38 +73,110 @@ public sealed partial class WalletTests : TestFixture
     {
         // Arrange
         var sut = Wallet.Of(new Money(1m, EUR));
-        ExchangeRateContext context = null!;
 
-        // Act
-        var exception = Record.Exception(() => _ = sut.In(context));
-
-        // Assert
-        Assert.IsType<ArgumentNullException>(exception);
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => sut.In(null!));
     }
 
     [Fact]
-    public void Of_WhenMoneyArrayIsNull_ThrowsArgumentNullException()
+    public void ToBuilder_WhenWalletIsMutatedThroughBuilder_DoesNotMutateOriginalWallet()
     {
         // Arrange
-        Money[] moneys = null!;
+        var sut = Wallet.Of(new Money(1m, EUR), new Money(2m, USD));
+        var builder = sut.ToBuilder();
 
         // Act
-        var exception = Record.Exception(() => _ = Wallet.Of(moneys));
+        builder.Add(new Money(10m, JPY));
 
         // Assert
-        Assert.IsType<ArgumentNullException>(exception);
+        Assert.Equal(2, sut.Count());
+        Assert.DoesNotContain(sut, m => m.Currency.Equals(JPY));
     }
 
     [Fact]
-    public void Of_WhenMoneyCollectionIsNull_ThrowsArgumentNullException()
+    public void GetEnumerator_WhenWalletHasEntries_YieldsAllMoneys()
     {
         // Arrange
-        IReadOnlyCollection<Money> moneys = null!;
+        var sut = Wallet.Of(new Money(1m, EUR), new Money(2m, USD));
 
         // Act
-        var exception = Record.Exception(() => _ = Wallet.Of(moneys));
+        var items = sut.ToList();
 
         // Assert
-        Assert.IsType<ArgumentNullException>(exception);
+        Assert.Equal(2, items.Count);
+    }
+
+    [Fact]
+    public void GetEnumerator_WhenWalletIsEmpty_YieldsNothing()
+    {
+        // Act
+        var items = Wallet.Empty.ToList();
+
+        // Assert
+        Assert.Empty(items);
+    }
+
+    [Fact]
+    public void NonGenericEnumerator_WhenIterated_ReturnsSameResultsAsGenericEnumerator()
+    {
+        // Arrange
+        var sut = Wallet.Of(new Money(1m, EUR), new Money(2m, USD));
+
+        // Act
+        var generic = sut.ToList();
+        var nonGeneric = new List<object>();
+        foreach (var item in (IEnumerable)sut)
+            nonGeneric.Add(item);
+
+        // Assert
+        Assert.Equal(generic.Count, nonGeneric.Count);
+        Assert.All(nonGeneric, o => Assert.IsType<Money>(o));
+    }
+
+    [Fact]
+    public void ResolveCurrency_WhenSingleCurrencyWallet_ReturnsThatCurrency()
+    {
+        // Arrange
+        var sut = Wallet.Of(new Money(1m, USD), new Money(2m, USD));
+
+        // Act — resolved via single-currency Total
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        var total = sut.In(context).Total();
+
+        // Assert
+        Assert.Equal(USD, total.Currency);
+    }
+
+    [Fact]
+    public void ResolveCurrency_WhenMultiCurrencyWallet_UsesDefaultCurrency()
+    {
+        // Arrange
+        var sut = Wallet.Of(new Money(1m, EUR), new Money(1m, USD));
+
+        // Act
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        var total = sut.In(context).Total();
+
+        // Assert — default is EUR from TestFixture
+        Assert.Equal(EUR, total.Currency);
+    }
+
+    [Fact]
+    public void ResolveCurrency_WhenMultiCurrencyAndNoDefault_ThrowsNoDefaultCurrencyException()
+    {
+        // Arrange
+        var sut = Wallet.Of(new Money(1m, EUR), new Money(1m, USD));
+        var context = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
+        Dispose();
+
+        try
+        {
+            // Act & Assert
+            Assert.Throws<NoDefaultCurrencyException>(() => sut.In(context).Total());
+        }
+        finally
+        {
+            _ = CurrenC.UseDefaultCurrency(EUR);
+        }
     }
 }

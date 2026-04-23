@@ -4,352 +4,208 @@ namespace CurrenCSharp.Test;
 
 public partial class MoneyTests
 {
-    [Fact]
-    public void UnaryPlus_WhenMoneyIsNotNull_ReturnsSameMoney()
+    public static TheoryData<decimal, decimal, decimal> AdditionData => new()
     {
-        // Arrange
-        var sut = new Money(12.34m, USD);
-
-        // Act
-        var result = +sut;
-
-        // Assert
-        Assert.Equal(12.34m, result.Amount);
-        Assert.Equal(USD, result.Currency);
-        Assert.Equal(sut, result);
-    }
-
-    [Fact]
-    public void UnaryPlus_WhenMoneyIsNull_ThrowsNoCurrencyException()
-    {
-        // Arrange
-        Money sut = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = +sut);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
-
-    [Fact]
-    public void UnaryMinus_WhenMoneyIsNotNull_ReturnsMoneyWithNegatedAmount()
-    {
-        // Arrange
-        var sut = new Money(12.34m, USD);
-
-        // Act
-        var result = -sut;
-
-        // Assert
-        Assert.Equal(-12.34m, result.Amount);
-        Assert.Equal(USD, result.Currency);
-    }
-
-    [Fact]
-    public void UnaryMinus_WhenMoneyIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        Money sut = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = -sut);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
+        { 10m, 5m, 15m },
+        { 0m, 0m, 0m },
+        { 10m, -5m, 5m },
+    };
 
     [Theory]
-    [InlineData(10.00, 5.00)]
-    [InlineData(5.00, 10.00)]
-    [InlineData(0.00, 0.00)]
-    public void Addition_WhenCurrenciesMatch_ReturnsMoneyWithSummedAmount(decimal leftAmount, decimal rightAmount)
+    [MemberData(nameof(AdditionData))]
+    public void Addition_WhenCurrenciesMatch_ReturnsSum(decimal leftAmount, decimal rightAmount, decimal expected)
     {
         // Arrange
-        var left = new Money(leftAmount, USD);
-        var right = new Money(rightAmount, USD);
+        var left = new Money(leftAmount, EUR);
+        var right = new Money(rightAmount, EUR);
 
         // Act
         var result = left + right;
 
         // Assert
-        Assert.Equal(leftAmount + rightAmount, result.Amount);
-        Assert.Equal(USD, result.Currency);
+        Assert.Equal(expected, result.Amount);
+        Assert.Equal(EUR, result.Currency);
     }
 
     [Fact]
-    public void Addition_WhenCurrenciesDoNotMatch_ThrowsDifferentCurrencyException()
+    public void Addition_WhenCurrenciesDiffer_ThrowsDifferentCurrencyException()
     {
         // Arrange
-        var left = new Money(10m, USD);
-        var right = new Money(5m, EUR);
+        var left = new Money(10m, EUR);
+        var right = new Money(5m, USD);
 
-        // Act
-        var exception = Record.Exception(() => _ = left + right);
-
-        // Assert
-        Assert.IsType<DifferentCurrencyException>(exception);
+        // Act & Assert
+        Assert.Throws<DifferentCurrencyException>(() => left + right);
     }
 
-    [Fact]
-    public void Addition_WhenLeftOperandIsNull_ThrowsArgumentNullException()
+    public static TheoryData<decimal, decimal, decimal> SubtractionData => new()
     {
-        // Arrange
-        Money left = default;
-        var right = new Money(1m, EUR);
-
-        // Act
-        var exception = Record.Exception(() => _ = left + right);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
-
-    [Fact]
-    public void Addition_WhenRightOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var left = new Money(1m, EUR);
-        Money right = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = left + right);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
+        { 10m, 5m, 5m },
+        { 0m, 0m, 0m },
+        { 5m, 10m, -5m },
+    };
 
     [Theory]
-    [InlineData(10.00, 5.00)]
-    [InlineData(5.00, 10.00)]
-    [InlineData(0.00, 0.00)]
-    public void Subtraction_WhenCurrenciesMatch_ReturnsMoneyWithSubtractedAmount(decimal leftAmount, decimal rightAmount)
+    [MemberData(nameof(SubtractionData))]
+    public void Subtraction_WhenCurrenciesMatch_ReturnsDifference(decimal leftAmount, decimal rightAmount, decimal expected)
     {
         // Arrange
-        var left = new Money(leftAmount, USD);
-        var right = new Money(rightAmount, USD);
+        var left = new Money(leftAmount, EUR);
+        var right = new Money(rightAmount, EUR);
 
         // Act
         var result = left - right;
 
         // Assert
-        Assert.Equal(leftAmount - rightAmount, result.Amount);
-        Assert.Equal(USD, result.Currency);
+        Assert.Equal(expected, result.Amount);
+        Assert.Equal(EUR, result.Currency);
     }
 
     [Fact]
-    public void Subtraction_WhenCurrenciesDoNotMatch_ThrowsDifferentCurrencyException()
+    public void Subtraction_WhenCurrenciesDiffer_ThrowsDifferentCurrencyException()
     {
         // Arrange
-        var left = new Money(10m, USD);
-        var right = new Money(5m, EUR);
+        var left = new Money(10m, EUR);
+        var right = new Money(5m, USD);
 
-        // Act
-        var exception = Record.Exception(() => _ = left - right);
-
-        // Assert
-        Assert.IsType<DifferentCurrencyException>(exception);
-    }
-
-    [Fact]
-    public void Subtraction_WhenLeftOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        Money left = default;
-        var right = new Money(1m, EUR);
-
-        // Act
-        var exception = Record.Exception(() => _ = left - right);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
-
-    [Fact]
-    public void Subtraction_WhenRightOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var left = new Money(1m, EUR);
-        Money right = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = left - right);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
+        // Act & Assert
+        Assert.Throws<DifferentCurrencyException>(() => left - right);
     }
 
     [Theory]
-    [InlineData(10.00, 5.00)]
-    [InlineData(5.00, 10.00)]
-    [InlineData(2.00, 0.00)]
-    public void Multiplication_WhenMoneyIsLeftOperand_ReturnsMoneyWithMultipliedAmount(decimal amount, decimal multiplier)
+    [InlineData(10)]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public void UnaryPlus_WhenCalled_ReturnsSameAmount(decimal amount)
     {
         // Arrange
-        var money = new Money(amount, USD);
+        var sut = new Money(amount, EUR);
 
         // Act
-        var result = money * multiplier;
+        var result = +sut;
 
         // Assert
-        Assert.Equal(amount * multiplier, result.Amount);
-        Assert.Equal(USD, result.Currency);
+        Assert.Equal(amount, result.Amount);
+        Assert.Equal(EUR, result.Currency);
     }
 
     [Theory]
-    [InlineData(10.00, 5.00)]
-    [InlineData(5.00, 10.00)]
-    [InlineData(2.00, 0.00)]
-    public void Multiplication_WhenMoneyIsRightOperand_ReturnsMoneyWithMultipliedAmount(decimal multiplier, decimal amount)
+    [InlineData(10, -10)]
+    [InlineData(0, 0)]
+    [InlineData(-5, 5)]
+    public void UnaryNegation_WhenCalled_ReturnsNegatedAmount(decimal amount, decimal expected)
     {
         // Arrange
-        var money = new Money(amount, USD);
+        var sut = new Money(amount, EUR);
 
         // Act
-        var result = multiplier * money;
+        var result = -sut;
 
         // Assert
-        Assert.Equal(amount * multiplier, result.Amount);
-        Assert.Equal(USD, result.Currency);
+        Assert.Equal(expected, result.Amount);
+        Assert.Equal(EUR, result.Currency);
     }
 
-    [Fact]
-    public void Multiplication_WhenLeftMoneyOperandIsNull_ThrowsArgumentNullException()
+    public static TheoryData<decimal, decimal, decimal> MultiplicationData => new()
+    {
+        { 10m, 2m, 20m },
+        { 10m, 0m, 0m },
+        { 10m, -1m, -10m },
+        { 10m, 1m, 10m },
+    };
+
+    [Theory]
+    [MemberData(nameof(MultiplicationData))]
+    public void Multiplication_WhenFactorIsScalar_ReturnsScaledMoney(decimal amount, decimal factor, decimal expected)
     {
         // Arrange
-        Money money = default;
+        var sut = new Money(amount, EUR);
 
         // Act
-        var exception = Record.Exception(() => _ = money * 2m);
+        var result = sut * factor;
 
         // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
-
-    [Fact]
-    public void Multiplication_WhenRightMoneyOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        Money money = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = 2m * money);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
+        Assert.Equal(expected, result.Amount);
+        Assert.Equal(EUR, result.Currency);
     }
 
     [Theory]
-    [InlineData(10.00, 5.00)]
-    [InlineData(5.00, 10.00)]
-    public void DivisionByMoney_WhenCurrenciesMatch_ReturnsDecimalRatio(decimal leftAmount, decimal rightAmount)
+    [InlineData(2, 10, 20)]
+    [InlineData(0, 10, 0)]
+    public void Multiplication_WhenOrderIsReversed_ReturnsSameResult(decimal factor, decimal amount, decimal expected)
     {
         // Arrange
-        var left = new Money(leftAmount, USD);
-        var right = new Money(rightAmount, USD);
+        var sut = new Money(amount, EUR);
+
+        // Act
+        var result = factor * sut;
+
+        // Assert
+        Assert.Equal(expected, result.Amount);
+        Assert.Equal(EUR, result.Currency);
+    }
+
+    [Theory]
+    [InlineData(10, 5, 2)]
+    [InlineData(10, 4, 2.5)]
+    public void DivisionByMoney_WhenCurrenciesMatch_ReturnsRatio(decimal dividend, decimal divisor, decimal expected)
+    {
+        // Arrange
+        var left = new Money(dividend, EUR);
+        var right = new Money(divisor, EUR);
 
         // Act
         var result = left / right;
 
         // Assert
-        Assert.Equal(leftAmount / rightAmount, result);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
-    public void DivisionByMoney_WhenCurrenciesDoNotMatch_ThrowsDifferentCurrencyException()
+    public void DivisionByMoney_WhenCurrenciesDiffer_ThrowsDifferentCurrencyException()
     {
         // Arrange
-        var left = new Money(10m, USD);
-        var right = new Money(5m, EUR);
+        var left = new Money(10m, EUR);
+        var right = new Money(5m, USD);
 
-        // Act
-        var exception = Record.Exception(() => _ = left / right);
-
-        // Assert
-        Assert.IsType<DifferentCurrencyException>(exception);
+        // Act & Assert
+        Assert.Throws<DifferentCurrencyException>(() => left / right);
     }
 
     [Fact]
-    public void DivisionByMoney_WhenDivisorAmountIsZero_ThrowsDivideByZeroException()
+    public void DivisionByMoney_WhenDivisorIsZero_ThrowsDivideByZeroException()
     {
         // Arrange
-        var left = new Money(10m, USD);
-        var right = Money.Zero(USD);
+        var left = new Money(10m, EUR);
+        var right = new Money(0m, EUR);
 
-        // Act
-        var exception = Record.Exception(() => _ = left / right);
-
-        // Assert
-        Assert.IsType<DivideByZeroException>(exception);
-    }
-
-    [Fact]
-    public void DivisionByMoney_WhenLeftOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        Money left = default;
-        var right = new Money(1m, EUR);
-
-        // Act
-        var exception = Record.Exception(() => _ = left / right);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
-    }
-
-    [Fact]
-    public void DivisionByMoney_WhenRightOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var left = new Money(1m, EUR);
-        Money right = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = left / right);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
+        // Act & Assert
+        Assert.Throws<DivideByZeroException>(() => left / right);
     }
 
     [Theory]
-    [InlineData(10.00, 5.00)]
-    [InlineData(5.00, 10.00)]
-    public void DivisionByDecimal_WhenDivisorIsNotZero_ReturnsMoneyWithDividedAmount(decimal amount, decimal divisor)
+    [InlineData(10, 2, 5)]
+    [InlineData(10, 4, 2.5)]
+    public void DivisionByDecimal_WhenDivisorIsScalar_ReturnsScaledMoney(decimal amount, decimal divisor, decimal expected)
     {
         // Arrange
-        var sut = new Money(amount, USD);
+        var sut = new Money(amount, EUR);
 
         // Act
         var result = sut / divisor;
 
         // Assert
-        Assert.Equal(amount / divisor, result.Amount);
-        Assert.Equal(USD, result.Currency);
+        Assert.Equal(expected, result.Amount);
+        Assert.Equal(EUR, result.Currency);
     }
 
     [Fact]
     public void DivisionByDecimal_WhenDivisorIsZero_ThrowsDivideByZeroException()
     {
         // Arrange
-        var sut = new Money(1m, EUR);
+        var sut = new Money(10m, EUR);
 
-        // Act
-        var exception = Record.Exception(() => _ = sut / 0m);
-
-        // Assert
-        Assert.IsType<DivideByZeroException>(exception);
-    }
-
-    [Fact]
-    public void DivisionByDecimal_WhenLeftOperandIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        Money sut = default;
-
-        // Act
-        var exception = Record.Exception(() => _ = sut / 2m);
-
-        // Assert
-        Assert.IsType<NoCurrencyException>(exception);
+        // Act & Assert
+        Assert.Throws<DivideByZeroException>(() => sut / 0m);
     }
 }

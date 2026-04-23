@@ -2,42 +2,78 @@ namespace CurrenCSharp.Test;
 
 public sealed class ScaleTests
 {
-    [Fact]
-    public void Constructor_WhenValueGreaterThan28_ThrowsArgumentOutOfRangeException()
+    [Theory]
+    [InlineData(29)]
+    [InlineData(100)]
+    [InlineData(byte.MaxValue)]
+    public void Constructor_WhenValueGreaterThan28_ThrowsArgumentOutOfRangeException(byte value)
     {
-        // Arrange
-        const byte value = 29;
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Scale(value));
+    }
 
+    [Theory]
+    [InlineData((byte)0)]
+    [InlineData((byte)1)]
+    [InlineData((byte)27)]
+    [InlineData((byte)28)]
+    public void Constructor_WhenValueIsAtBoundary_Succeeds(byte value)
+    {
         // Act
-        var exception = Record.Exception(() => _ = new Scale(value));
+        var scale = new Scale(value);
 
         // Assert
-        Assert.IsType<ArgumentOutOfRangeException>(exception);
+        Assert.Equal(value, (byte)scale);
     }
 
     [Fact]
-    public void ImplicitIntConversion_WhenScaleIsValid_ReturnsExpectedValue()
+    public void Conversions_ScaleToInt_ReturnsValue()
     {
         // Arrange
-        var sut = new Scale(4);
+        var scale = new Scale(4);
 
         // Act
-        int result = sut;
+        int intValue = scale;
 
         // Assert
-        Assert.Equal(4, result);
+        Assert.Equal(4, intValue);
     }
 
     [Fact]
-    public void ExplicitByteConversion_WhenScaleIsValid_ReturnsExpectedValue()
+    public void Conversions_ScaleToByte_ReturnsValue()
     {
         // Arrange
-        var sut = new Scale(6);
+        var scale = new Scale(6);
 
         // Act
-        var result = (byte)sut;
+        byte byteValue = (byte)scale;
 
         // Assert
-        Assert.Equal(6, result);
+        Assert.Equal(6, byteValue);
+    }
+
+    [Fact]
+    public void Conversions_ByteToScale_ReturnsScale()
+    {
+        // Arrange
+        byte value = 10;
+
+        // Act
+        Scale scale = value;
+
+        // Assert
+        Assert.Equal(value, (byte)scale);
+    }
+
+    [Fact]
+    public void Equals_WhenValuesMatch_ReturnsTrueAndSameHashCode()
+    {
+        // Arrange
+        var left = new Scale(4);
+        var right = new Scale(4);
+
+        // Act & Assert
+        Assert.Equal(left, right);
+        Assert.Equal(left.GetHashCode(), right.GetHashCode());
     }
 }

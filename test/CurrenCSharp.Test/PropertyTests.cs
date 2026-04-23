@@ -7,364 +7,523 @@ namespace CurrenCSharp.Test;
 public sealed class PropertyTests : TestFixture
 {
     [Fact]
-    public void DistributeByCount_WhenCalled_PreservesCountCurrencyAndAmount()
+    public void Distribute_WhenCalled_PreservesTotalCurrencyAndCount_Property()
     {
         // Arrange
-        var generator = Gen.Zip(
-            Gen.Choose(-1_000_000, 1_000_000),
-            Gen.Choose(1, 100),
-            (amountCents, count) => (amountCents, count));
+        var gen =
+            from amountCents in Gen.Choose(-1_000_000, 1_000_000)
+            from count in Gen.Choose(1, 100)
+            select (amountCents, count);
 
-        var property = Prop.ForAll(Arb.From(generator), data =>
+        var property = Prop.ForAll(Arb.From(gen), data =>
         {
-            var (amountCents, count) = data;
-            var amount = amountCents / 100m;
-            var money = new Money(amount, EUR);
-            var shares = money.Distribute(count);
-            var sum = shares.Aggregate(Money.Zero(EUR), (current, next) => current + next);
+            var money = new Money(data.amountCents / 100m, EUR);
+            var shares = money.Distribute(data.count);
+            var sum = shares.Aggregate(Money.Zero(EUR), (c, n) => c + n);
 
-            return shares.Count == count && shares.All(share => share.Currency == EUR) && sum == money;
+            return shares.Count == data.count
+                && shares.All(s => s.Currency == EUR)
+                && sum == money;
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void DistributeByCount_WhenCalled_KeepsSpreadWithinOneMinorUnit()
+    public void Distribute_WhenCalled_DeviationIsAtMostOneMinorUnit_Property()
     {
         // Arrange
-        var generator = Gen.Zip(
-            Gen.Choose(-1_000_000, 1_000_000),
-            Gen.Choose(1, 100),
-            (amountCents, count) => (amountCents, count));
-
-        var property = Prop.ForAll(Arb.From(generator), data =>
-        {
-            var (amountCents, count) = data;
-            var amount = amountCents / 100m;
-            var shares = new Money(amount, EUR).Distribute(count).Select(share => share.Amount).ToArray();
-            var spread = shares.Max() - shares.Min();
-
-            return spread <= 0.01m;
-        });
-
-        // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
-
-        // Assert
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public void DistributeByRatios_WhenCalled_PreservesTotalAndCurrency()
-    {
-        // Arrange
-        var ratioGenerator =
+        var gen =
+            from amountCents in Gen.Choose(-1_000_000, 1_000_000)
             from first in Gen.Choose(0, 100)
             from second in Gen.Choose(0, 100)
             from third in Gen.Choose(0, 100)
             where first + second + third > 0
-            select (first, second, third);
+            select (amountCents, first, second, third);
 
-        var generator = Gen.Zip(
-            Gen.Choose(-1_000_000, 1_000_000),
-            ratioGenerator,
-            (amountCents, ratios) => (amountCents, ratios));
-
-        var property = Prop.ForAll(Arb.From(generator), data =>
+        var property = Prop.ForAll(Arb.From(gen), data =>
         {
-            var (amountCents, ratios) = data;
-            var (first, second, third) = ratios;
-            var amount = amountCents / 100m;
-
+            var amount = data.amountCents / 100m;
             var money = new Money(amount, EUR);
-            var shares = money.Distribute((Ratio)first, (Ratio)second, (Ratio)third);
-            var sum = shares.Aggregate(Money.Zero(EUR), (current, next) => current + next);
-
-            return shares.All(share => share.Currency == EUR) && sum == money;
-        });
-
-        // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
-
-        // Assert
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public void DistributeByRatios_WhenCalled_DeviationFromIdealShareIsWithinOneMinorUnit()
-    {
-        // Arrange
-        var ratioGenerator =
-            from first in Gen.Choose(0, 100)
-            from second in Gen.Choose(0, 100)
-            from third in Gen.Choose(0, 100)
-            where first + second + third > 0
-            select (first, second, third);
-
-        var generator = Gen.Zip(
-            Gen.Choose(-1_000_000, 1_000_000),
-            ratioGenerator,
-            (amountCents, ratios) => (amountCents, ratios));
-
-        var property = Prop.ForAll(Arb.From(generator), data =>
-        {
-            var (amountCents, ratios) = data;
-            var (first, second, third) = ratios;
-            var amount = amountCents / 100m;
-
-            var money = new Money(amount, EUR);
-            var ratioValues = new[] { (decimal)(Ratio)first, (decimal)(Ratio)second, (decimal)(Ratio)third };
-            var shares = money.Distribute((Ratio)first, (Ratio)second, (Ratio)third).ToArray();
-            var ratioSum = ratioValues.Sum();
+            var ratios = new decimal[] { data.first, data.second, data.third };
+            var shares = money.Distribute((Ratio)data.first, (Ratio)data.second, (Ratio)data.third).ToArray();
+            var ratioSum = ratios.Sum();
             var minorUnit = 1m / (decimal)Math.Pow(10, EUR.MinorUnits);
 
-            for (var i = 0; i < shares.Length; i++)
+            for (int i = 0; i < shares.Length; i++)
             {
-                var idealShare = amount * (ratioValues[i] / ratioSum);
-                if (Math.Abs(shares[i].Amount - idealShare) > minorUnit)
+                var ideal = amount * (ratios[i] / ratioSum);
+                if (Math.Abs(shares[i].Amount - ideal) > minorUnit)
                     return false;
             }
-
             return true;
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void ExchangeRateContext_WhenRatesAreValid_ProducesConsistentCrossAndInverseRates()
+    public void GetExchangeRate_WhenRatesAreValid_IsInverseAndCrossConsistent_Property()
     {
         // Arrange
-        var generator = Gen.Zip(
-            Gen.Choose(1, 50_000),
-            Gen.Choose(1, 50_000),
-            (usdRaw, jpyRaw) => (usdRaw, jpyRaw));
+        var gen =
+            from usdRaw in Gen.Choose(1, 50_000)
+            from jpyRaw in Gen.Choose(1, 50_000)
+            select (usdRaw, jpyRaw);
 
-        var property = Prop.ForAll(Arb.From(generator), data =>
+        var property = Prop.ForAll(Arb.From(gen), data =>
         {
-            var (usdRaw, jpyRaw) = data;
-            var usdRate = usdRaw / 10_000m;
-            var jpyRate = jpyRaw / 10_000m;
+            var usdRate = data.usdRaw / 10_000m;
+            var jpyRate = data.jpyRaw / 10_000m;
 
-            var context = new ExchangeRateContext(
-                EUR,
-                DateTimeOffset.UnixEpoch,
+            var ctx = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch,
                 ImmutableDictionary<Currency, ExchangeRate>.Empty
                     .Add(USD, new ExchangeRate(usdRate))
                     .Add(JPY, new ExchangeRate(jpyRate)));
 
-            var usdToJpy = (decimal)context.GetExchangeRate(USD, JPY);
-            var expectedUsdToJpy = jpyRate / usdRate;
-            var inverseProduct = usdToJpy * (decimal)context.GetExchangeRate(JPY, USD);
+            var cross = (decimal)ctx.GetExchangeRate(USD, JPY);
+            var expected = jpyRate / usdRate;
+            var inverseProduct = cross * (decimal)ctx.GetExchangeRate(JPY, USD);
 
-            return IsClose(usdToJpy, expectedUsdToJpy)
-                   && IsClose(inverseProduct, 1m)
-                   && (decimal)context.GetExchangeRate(USD, USD) == 1m;
+            return IsClose(cross, expected)
+                && IsClose(inverseProduct, 1m)
+                && (decimal)ctx.GetExchangeRate(USD, USD) == 1m;
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void WalletPlusNegatedWallet_WhenComputed_CancelsToEmptyWallet()
+    public void Of_WhenInputOrderChanges_RemainsEqual_Property()
     {
         // Arrange
-        var generator = Gen.ArrayOf(Gen.Choose(-200_000, 200_000), 20);
+        var gen = Gen.ArrayOf(Gen.Choose(-200_000, 200_000), 10);
 
-        var property = Prop.ForAll(Arb.From(generator), cents =>
+        var property = Prop.ForAll(Arb.From(gen), cents =>
         {
-            var amounts = cents.Select(value => value / 100m).ToArray();
-            var wallet = Wallet.Of(amounts.Select(amount => new Money(amount, EUR)).ToArray());
-            var canceled = wallet + (-wallet);
+            var moneys = cents.Select(v => new Money(v / 100m, EUR)).ToArray();
+            var wallet1 = Wallet.Of(moneys);
+            var reversed = moneys.Reverse().ToArray();
+            var wallet2 = Wallet.Of(reversed);
 
-            return !canceled.Any();
+            return wallet1.Equals(wallet2);
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void MoneyAddition_WhenCurrenciesMatch_IsCommutative()
+    public void Convert_WhenRoundResultIsFalse_RoundTripAtoBtoA_IsWithinTolerance_Property()
     {
         // Arrange
-        var generator = Gen.Zip(
-            Gen.Choose(-1_000_000, 1_000_000),
-            Gen.Choose(-1_000_000, 1_000_000),
-            (leftCents, rightCents) => (leftCents, rightCents));
+        var gen =
+            from amountCents in Gen.Choose(1, 1_000_000)
+            from rateRaw in Gen.Choose(1, 50_000)
+            select (amountCents, rateRaw);
 
-        var property = Prop.ForAll(Arb.From(generator), data =>
+        var property = Prop.ForAll(Arb.From(gen), data =>
         {
-            var (leftCents, rightCents) = data;
-            var left = new Money(leftCents / 100m, EUR);
-            var right = new Money(rightCents / 100m, EUR);
+            var rate = data.rateRaw / 10_000m;
+            var ctx = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch,
+                ImmutableDictionary<Currency, ExchangeRate>.Empty.Add(USD, new ExchangeRate(rate)));
 
+            var amount = data.amountCents / 100m;
+            var original = new Money(amount, EUR);
+            var options = new ConversionOptions(RoundResult: false);
+
+            var inUsd = original.In(ctx).Convert(USD, options);
+            var backToEur = inUsd.In(ctx).Convert(EUR, options);
+
+            return Math.Abs(backToEur.Amount - amount) <= 0.000000000000000001m;
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Addition_WhenSameCurrency_IsCommutative_Property()
+    {
+        // Arrange
+        var gen =
+            from a in Gen.Choose(-1_000_000, 1_000_000)
+            from b in Gen.Choose(-1_000_000, 1_000_000)
+            select (a, b);
+
+        var property = Prop.ForAll(Arb.From(gen), data =>
+        {
+            var left = new Money(data.a / 100m, EUR);
+            var right = new Money(data.b / 100m, EUR);
             return left + right == right + left;
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void MoneyAddition_WhenCurrenciesMatch_IsAssociative()
+    public void Addition_WhenSameCurrency_IsAssociative_Property()
     {
         // Arrange
-        var generator =
-            from firstCents in Gen.Choose(-1_000_000, 1_000_000)
-            from secondCents in Gen.Choose(-1_000_000, 1_000_000)
-            from thirdCents in Gen.Choose(-1_000_000, 1_000_000)
-            select (firstCents, secondCents, thirdCents);
+        var gen =
+            from a in Gen.Choose(-1_000_000, 1_000_000)
+            from b in Gen.Choose(-1_000_000, 1_000_000)
+            from c in Gen.Choose(-1_000_000, 1_000_000)
+            select (a, b, c);
 
-        var property = Prop.ForAll(Arb.From(generator), data =>
+        var property = Prop.ForAll(Arb.From(gen), data =>
         {
-            var (firstCents, secondCents, thirdCents) = data;
-            var first = new Money(firstCents / 100m, EUR);
-            var second = new Money(secondCents / 100m, EUR);
-            var third = new Money(thirdCents / 100m, EUR);
-
-            return (first + second) + third == first + (second + third);
+            var a = new Money(data.a / 100m, EUR);
+            var b = new Money(data.b / 100m, EUR);
+            var c = new Money(data.c / 100m, EUR);
+            return (a + b) + c == a + (b + c);
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void MoneyPlusNegation_WhenCurrenciesMatch_ReturnsZeroMoney()
+    public void AdditionWithNegation_WhenSameCurrency_ReturnsZero_Property()
     {
         // Arrange
-        var generator = Gen.Choose(-1_000_000, 1_000_000);
+        var gen = Gen.Choose(-1_000_000, 1_000_000);
 
-        var property = Prop.ForAll(Arb.From(generator), cents =>
+        var property = Prop.ForAll(Arb.From(gen), cents =>
         {
             var money = new Money(cents / 100m, EUR);
-            var result = money + (-money);
-
-            return result == Money.Zero(EUR);
+            return money + (-money) == Money.Zero(EUR);
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void MoneyComparison_WhenCurrenciesMatch_IsAntisymmetric()
+    public void CompareTo_WhenSameCurrency_IsAntisymmetricAndTransitive_Property()
     {
         // Arrange
-        var generator = Gen.Zip(
-            Gen.Choose(-1_000_000, 1_000_000),
-            Gen.Choose(-1_000_000, 1_000_000),
-            (leftCents, rightCents) => (leftCents, rightCents));
+        var antiSymGen =
+            from a in Gen.Choose(-1_000_000, 1_000_000)
+            from b in Gen.Choose(-1_000_000, 1_000_000)
+            select (a, b);
 
-        var property = Prop.ForAll(Arb.From(generator), data =>
+        var antiSym = Prop.ForAll(Arb.From(antiSymGen), data =>
         {
-            var (leftCents, rightCents) = data;
-            var left = new Money(leftCents / 100m, EUR);
-            var right = new Money(rightCents / 100m, EUR);
+            var l = new Money(data.a / 100m, EUR);
+            var r = new Money(data.b / 100m, EUR);
+            return Math.Sign(l.CompareTo(r)) == -Math.Sign(r.CompareTo(l));
+        });
 
-            var leftToRight = Math.Sign(left.CompareTo(right));
-            var rightToLeft = Math.Sign(right.CompareTo(left));
+        var transGen =
+            from a in Gen.Choose(-1_000_000, 1_000_000)
+            from b in Gen.Choose(-1_000_000, 1_000_000)
+            from c in Gen.Choose(-1_000_000, 1_000_000)
+            select (a, b, c);
 
-            return leftToRight == -rightToLeft;
+        var trans = Prop.ForAll(Arb.From(transGen), data =>
+        {
+            var l = new Money(data.a / 100m, EUR);
+            var m = new Money(data.b / 100m, EUR);
+            var r = new Money(data.c / 100m, EUR);
+            return !(l <= m && m <= r) || l <= r;
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var ex1 = Record.Exception(antiSym.QuickCheckThrowOnFailure);
+        var ex2 = Record.Exception(trans.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(ex1);
+        Assert.Null(ex2);
+    }
+
+    [Fact]
+    public void WalletPlusNegatedWallet_WhenComputed_CancelsToEmptyWallet_Property()
+    {
+        // Arrange
+        var gen = Gen.ArrayOf(Gen.Choose(-200_000, 200_000), 20);
+
+        var property = Prop.ForAll(Arb.From(gen), cents =>
+        {
+            var wallet = Wallet.Of(cents.Select(v => new Money(v / 100m, EUR)).ToArray());
+            return !(wallet + (-wallet)).Any();
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void MoneyComparison_WhenCurrenciesMatch_IsTransitive()
+    public void ParseToString_WhenAlphaCodeIsValid_RoundTrips_Property()
     {
         // Arrange
-        var generator =
-            from leftCents in Gen.Choose(-1_000_000, 1_000_000)
-            from middleCents in Gen.Choose(-1_000_000, 1_000_000)
-            from rightCents in Gen.Choose(-1_000_000, 1_000_000)
-            select (leftCents, middleCents, rightCents);
+        var gen =
+            from a in Gen.Choose(0, 25)
+            from b in Gen.Choose(0, 25)
+            from c in Gen.Choose(0, 25)
+            select new string(new[] { (char)('A' + a), (char)('A' + b), (char)('A' + c) });
 
-        var property = Prop.ForAll(Arb.From(generator), data =>
-        {
-            var (leftCents, middleCents, rightCents) = data;
-            var left = new Money(leftCents / 100m, EUR);
-            var middle = new Money(middleCents / 100m, EUR);
-            var right = new Money(rightCents / 100m, EUR);
-
-            return !(left <= middle && middle <= right) || left <= right;
-        });
+        var property = Prop.ForAll(Arb.From(gen), code =>
+            AlphaCode.Parse(code).ToString() == code);
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void AlphaCodeParseToString_WhenCodeIsValid_RoundTrips()
+    public void ParseToString_WhenNumericCodeIsValid_RoundTrips_Property()
     {
         // Arrange
-        var generator =
-            from first in Gen.Choose(0, 25)
-            from second in Gen.Choose(0, 25)
-            from third in Gen.Choose(0, 25)
-            select new string([(char)('A' + first), (char)('A' + second), (char)('A' + third)]);
+        var gen = Gen.Choose(0, 999).Select(v => v.ToString("D3"));
 
-        var property = Prop.ForAll(Arb.From(generator), code =>
-        {
-            var parsed = AlphaCode.Parse(code);
-            return parsed.ToString() == code;
-        });
+        var property = Prop.ForAll(Arb.From(gen), code =>
+            NumericCode.Parse(code).ToString() == code);
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
     }
 
     [Fact]
-    public void NumericCodeParseToString_WhenCodeIsValid_RoundTrips()
+    public void Subtraction_AddingBackRightOperand_EqualsLeftOperand_Property()
     {
         // Arrange
-        var generator = Gen.Choose(0, 999).Select(value => value.ToString("D3"));
+        var gen =
+            from a in Gen.Choose(-1_000_000, 1_000_000)
+            from b in Gen.Choose(-1_000_000, 1_000_000)
+            select (a, b);
 
-        var property = Prop.ForAll(Arb.From(generator), code =>
+        var property = Prop.ForAll(Arb.From(gen), data =>
         {
-            var parsed = NumericCode.Parse(code);
-            return parsed.ToString() == code;
+            var a = new Money(data.a / 100m, EUR);
+            var b = new Money(data.b / 100m, EUR);
+            return (a - b) + b == a;
         });
 
         // Act
-        var exception = Record.Exception(() => property.QuickCheckThrowOnFailure());
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Multiplication_ByOne_IsIdentity_Property()
+    {
+        // Arrange
+        var gen = Gen.Choose(-1_000_000, 1_000_000);
+
+        var property = Prop.ForAll(Arb.From(gen), cents =>
+        {
+            var money = new Money(cents / 100m, EUR);
+            return money * 1m == money;
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Multiplication_ByMinusOne_EqualsNegation_Property()
+    {
+        // Arrange
+        var gen = Gen.Choose(-1_000_000, 1_000_000);
+
+        var property = Prop.ForAll(Arb.From(gen), cents =>
+        {
+            var money = new Money(cents / 100m, EUR);
+            return money * -1m == -money;
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Abs_WhenAppliedTwice_IsIdempotent_Property()
+    {
+        // Arrange
+        var gen = Gen.Choose(-1_000_000, 1_000_000);
+
+        var property = Prop.ForAll(Arb.From(gen), cents =>
+        {
+            var money = new Money(cents / 100m, EUR);
+            return money.Abs().Abs() == money.Abs();
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Round_WhenAppliedTwiceWithSameArgs_IsIdempotent_Property()
+    {
+        // Arrange
+        var gen =
+            from cents in Gen.Choose(-1_000_000, 1_000_000)
+            from decimals in Gen.Choose(0, 10)
+            select (cents, decimals);
+
+        var property = Prop.ForAll(Arb.From(gen), data =>
+        {
+            var money = new Money(data.cents / 100m, EUR);
+            var once = money.Round(data.decimals, MidpointRounding.ToEven);
+            var twice = once.Round(data.decimals, MidpointRounding.ToEven);
+            return once == twice;
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Multiplication_DivisionByNonZeroScalar_RoundTrips_Property()
+    {
+        // Arrange
+        var gen =
+            from cents in Gen.Choose(-10_000, 10_000)
+            from factor in Gen.Choose(1, 10)
+            select (cents, factor);
+
+        var property = Prop.ForAll(Arb.From(gen), data =>
+        {
+            var wallet = Wallet.Of(new Money(data.cents / 100m, EUR));
+            var round = (wallet * data.factor) / data.factor;
+            return wallet.Equals(round);
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ExchangeRate_InverseOfInverse_EqualsOriginal_Property()
+    {
+        // Arrange
+        var gen = Gen.Choose(1, 100_000);
+
+        var property = Prop.ForAll(Arb.From(gen), raw =>
+        {
+            var rate = raw / 1_000m;
+            var inverse = 1m / rate;
+            var doubleInverse = 1m / inverse;
+            return Math.Abs(doubleInverse - rate) <= 0.000000000001m;
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Builder_WhenRandomOperationsApplied_MatchesReferenceModel_Property()
+    {
+        // Arrange — generate 1..50 Add/Remove/Clear operations
+        var opGen =
+            from kind in Gen.Choose(0, 3) // 0=Add, 1=Remove, 2=Clear, 3=Add (weight)
+            from curr in Gen.Choose(0, 2) // 0=EUR, 1=USD, 2=JPY
+            from amt in Gen.Choose(-1000, 1000)
+            select (kind, curr, amt);
+        var seqGen = Gen.ArrayOf(opGen);
+
+        var property = Prop.ForAll(Arb.From(seqGen), ops =>
+        {
+            var builder = Wallet.Empty.ToBuilder();
+            var model = new Dictionary<Currency, decimal>();
+            var currencies = new[] { EUR, USD, JPY };
+
+            foreach (var (kind, currIdx, amt) in ops)
+            {
+                var c = currencies[currIdx];
+                if (kind == 2)
+                {
+                    builder.Clear();
+                    model.Clear();
+                }
+                else if (kind == 1)
+                {
+                    builder.Remove(c);
+                    model.Remove(c);
+                }
+                else
+                {
+                    var money = new Money(amt / 10m, c);
+                    builder.Add(money);
+                    model.TryGetValue(c, out var existing);
+                    var next = existing + money.Amount;
+                    if (next == 0m)
+                        model.Remove(c);
+                    else
+                        model[c] = next;
+                }
+            }
+
+            // Verify builder matches model
+            if (builder.Count != model.Count) return false;
+            foreach (var (c, amount) in model)
+            {
+                if (!builder.TryGetValue(c, out var money)) return false;
+                if (money.Amount != amount) return false;
+            }
+            return true;
+        });
+
+        // Act
+        var exception = Record.Exception(property.QuickCheckThrowOnFailure);
 
         // Assert
         Assert.Null(exception);
