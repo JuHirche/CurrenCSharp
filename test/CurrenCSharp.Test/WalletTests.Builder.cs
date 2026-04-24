@@ -38,12 +38,12 @@ public sealed partial class WalletTests
         var builder = Wallet.Empty.ToBuilder();
 
         // Act
-        builder.AddRange(new[]
-        {
+        builder.AddRange(
+        [
             new Money(1m, EUR),
             new Money(2m, USD),
             new Money(3m, EUR),
-        });
+        ]);
 
         // Assert
         Assert.Equal(4m, builder[EUR].Amount);
@@ -90,16 +90,12 @@ public sealed partial class WalletTests
         Assert.Throws<KeyNotFoundException>(() => _ = builder[JPY]);
     }
 
-    public static TheoryData<Currency, bool> RemoveData
-    {
-        get
+    public static TheoryData<Currency, bool> RemoveData =>
+        new()
         {
-            var data = new TheoryData<Currency, bool>();
-            data.Add(TestFixture.EUR, true);
-            data.Add(TestFixture.JPY, false);
-            return data;
-        }
-    }
+            { EUR, true },
+            { JPY, false }
+        };
 
     [Theory]
     [MemberData(nameof(RemoveData))]
@@ -246,16 +242,12 @@ public sealed partial class WalletTests
         Assert.Contains(values, m => m.Currency.Equals(USD) && m.Amount == 2m);
     }
 
-    public static TheoryData<Currency, bool> ContainsKeyData
-    {
-        get
+    public static TheoryData<Currency, bool> ContainsKeyData =>
+        new()
         {
-            var data = new TheoryData<Currency, bool>();
-            data.Add(TestFixture.EUR, true);
-            data.Add(TestFixture.JPY, false);
-            return data;
-        }
-    }
+            { EUR, true },
+            { JPY, false }
+        };
 
     [Theory]
     [MemberData(nameof(ContainsKeyData))]

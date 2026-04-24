@@ -30,18 +30,13 @@ public sealed partial class WalletTests
         Assert.Equal(5m, items[USD]);
     }
 
-    public static TheoryData<Action> NullUnaryOperatorActions => new()
-    {
-        { () => { _ = +((Wallet)null!); } },
-        { () => { _ = -((Wallet)null!); } },
-    };
 
-    [Theory]
-    [MemberData(nameof(NullUnaryOperatorActions))]
-    public void UnaryOperators_WhenWalletIsNull_ThrowArgumentNullException(Action act)
+    [Fact]
+    public void UnaryOperators_WhenWalletIsNull_ThrowArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(act);
+        Assert.Throws<ArgumentNullException>(() => { _ = +((Wallet)null!); });
+        Assert.Throws<ArgumentNullException>(() => { _ = -((Wallet)null!); });
     }
 
     [Fact]
@@ -104,30 +99,21 @@ public sealed partial class WalletTests
         Assert.Empty(result);
     }
 
-    public static TheoryData<Action> NullBinaryOperatorActions
-    {
-        get
-        {
-            var wallet = Wallet.Of(new Money(1m, new Currency("EUR", 978, 2)));
-            var money = new Money(1m, new Currency("EUR", 978, 2));
-            return new()
-            {
-                { () => { _ = ((Wallet)null!) + wallet; } },
-                { () => { _ = wallet + ((Wallet)null!); } },
-                { () => { _ = ((Wallet)null!) - wallet; } },
-                { () => { _ = wallet - ((Wallet)null!); } },
-                { () => { _ = ((Wallet)null!) + money; } },
-                { () => { _ = ((Wallet)null!) - money; } },
-            };
-        }
-    }
 
-    [Theory]
-    [MemberData(nameof(NullBinaryOperatorActions))]
-    public void BinaryOperators_WhenEitherOperandIsNull_ThrowArgumentNullException(Action act)
+    [Fact]
+    public void BinaryOperators_WhenEitherOperandIsNull_ThrowArgumentNullException()
     {
+        // Act
+        var wallet = Wallet.Of(new Money(1m, new Currency("EUR", 978, 2)));
+        var money = new Money(1m, new Currency("EUR", 978, 2));
+
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(act);
+        Assert.Throws<ArgumentNullException>(() => (Wallet)null! + wallet);
+        Assert.Throws<ArgumentNullException>(() => wallet + (Wallet)null!);
+        Assert.Throws<ArgumentNullException>(() => (Wallet)null! - wallet);
+        Assert.Throws<ArgumentNullException>(() => wallet - (Wallet)null!);
+        Assert.Throws<ArgumentNullException>(() => (Wallet)null! + money);
+        Assert.Throws<ArgumentNullException>(() => (Wallet)null! - money);
     }
 
     [Fact]
@@ -198,18 +184,13 @@ public sealed partial class WalletTests
         Assert.Throws<DivideByZeroException>(() => sut / 0m);
     }
 
-    public static TheoryData<Action> NullScalarOperatorActions => new()
-    {
-        { () => { _ = ((Wallet)null!) * 2m; } },
-        { () => { _ = 2m * ((Wallet)null!); } },
-        { () => { _ = ((Wallet)null!) / 2m; } },
-    };
 
-    [Theory]
-    [MemberData(nameof(NullScalarOperatorActions))]
-    public void ScalarOperators_WhenWalletIsNull_ThrowArgumentNullException(Action act)
+    [Fact]
+    public void ScalarOperators_WhenWalletIsNull_ThrowArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(act);
+        Assert.Throws<ArgumentNullException>(() => ((Wallet)null!) * 2m);
+        Assert.Throws<ArgumentNullException>(() => 2m * ((Wallet)null!));
+        Assert.Throws<ArgumentNullException>(() => ((Wallet)null!) / 2m);
     }
 }

@@ -141,9 +141,8 @@ public sealed class Iso4217Tests
     }
 
     private static IReadOnlyList<Currency> GetCatalogCurrencies() =>
-        typeof(Iso4217)
+        [.. typeof(Iso4217)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
             .Where(f => f.FieldType == typeof(Currency))
-            .Select(f => (Currency)f.GetValue(null)!)
-            .ToList();
+            .Select(f => (Currency)f.GetValue(null)!)];
 }

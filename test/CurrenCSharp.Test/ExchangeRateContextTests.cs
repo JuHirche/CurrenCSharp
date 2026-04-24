@@ -4,38 +4,26 @@ namespace CurrenCSharp.Test;
 
 public sealed class ExchangeRateContextTests : TestFixture
 {
-    public static TheoryData<Func<ExchangeRateContext>> ConstructorNullInputs => new()
-    {
-        { () => new ExchangeRateContext(null!, DateTimeOffset.UnixEpoch, LatestExchangeRates) },
-        { () => new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, null!) },
-    };
-
-    [Theory]
-    [MemberData(nameof(ConstructorNullInputs))]
-    public void Constructor_WhenRequiredArgumentIsNull_ThrowsArgumentNullException(Func<ExchangeRateContext> act)
+    [Fact]
+    public void Constructor_WhenRequiredArgumentIsNull_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(act);
+        Assert.Throws<ArgumentNullException>(() => new ExchangeRateContext(null!, DateTimeOffset.UnixEpoch, LatestExchangeRates));
+        Assert.Throws<ArgumentNullException>(() => new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, null!));
     }
 
-    public static TheoryData<Func<ExchangeRateContext, ExchangeRate>> GetExchangeRateNullInputs => new()
-    {
-        { ctx => ctx.GetExchangeRate(null!, TestFixture.USD) },
-        { ctx => ctx.GetExchangeRate(TestFixture.USD, null!) },
-    };
-
-    [Theory]
-    [MemberData(nameof(GetExchangeRateNullInputs))]
-    public void GetExchangeRate_WhenEitherCurrencyIsNull_ThrowsArgumentNullException(Func<ExchangeRateContext, ExchangeRate> act)
+    [Fact]
+    public void GetExchangeRate_WhenEitherCurrencyIsNull_ThrowsArgumentNullException()
     {
         // Arrange
         var ctx = new ExchangeRateContext(EUR, DateTimeOffset.UnixEpoch, LatestExchangeRates);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => act(ctx));
+        Assert.Throws<ArgumentNullException>(() => ctx.GetExchangeRate(null!, TestFixture.USD));
+        Assert.Throws<ArgumentNullException>(() => ctx.GetExchangeRate(TestFixture.USD, null!));
     }
 
-    public static TheoryData<Currency> SameCurrencyData => new() { EUR, USD, JPY };
+    public static TheoryData<Currency> SameCurrencyData => [EUR, USD, JPY];
 
     [Theory]
     [MemberData(nameof(SameCurrencyData))]

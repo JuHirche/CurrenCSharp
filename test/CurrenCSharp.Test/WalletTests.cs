@@ -15,35 +15,22 @@ public sealed partial class WalletTests : TestFixture
         Assert.Empty(sut);
     }
 
-    public static TheoryData<Func<Wallet>> NullOfInputs => new()
-    {
-        { () => Wallet.Of((Money[])null!) },
-        { () => Wallet.Of((IReadOnlyCollection<Money>)null!) },
-    };
 
-    [Theory]
-    [MemberData(nameof(NullOfInputs))]
-    public void Of_WhenMoneysIsNull_ThrowsArgumentNullException(Func<Wallet> act)
+    [Fact]
+    public void Of_WhenMoneysIsNull_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(act);
+        Assert.Throws<ArgumentNullException>(() => Wallet.Of((Money[])null!));
+        Assert.Throws<ArgumentNullException>(() => Wallet.Of((IReadOnlyCollection<Money>)null!));
     }
 
-    public static TheoryData<Func<Wallet>> EmptyOfInputs => new()
-    {
-        { () => Wallet.Of() },
-        { () => Wallet.Of(new List<Money>()) },
-    };
 
-    [Theory]
-    [MemberData(nameof(EmptyOfInputs))]
-    public void Of_WhenInputIsEmpty_ReturnsEmptyWallet(Func<Wallet> act)
+    [Fact]
+    public void Of_WhenInputIsEmpty_ReturnsEmptyWallet()
     {
-        // Act
-        var result = act();
-
-        // Assert
-        Assert.Empty(result);
+        // Act & Assert
+        Assert.Empty(Wallet.Of());
+        Assert.Empty(Wallet.Of(new List<Money>()));
     }
 
     [Fact]
