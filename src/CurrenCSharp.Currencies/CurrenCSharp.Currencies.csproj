@@ -9,7 +9,7 @@
 		<PackageId>CurrenCSharp.Currencies</PackageId>
 		<Description>ISO 4217 currency catalog for CurrenCSharp with predefined currencies and lookup helpers.</Description>
 		<PackageTags>money;currency;finance;iso4217;exchange-rate;dotnet</PackageTags>
-		<MinVerTagPrefix>CurrenCSharp.Currencies_v</MinVerTagPrefix>
+		<MinVerTagPrefix>v</MinVerTagPrefix>
 	</PropertyGroup>
 
 	<ItemGroup>

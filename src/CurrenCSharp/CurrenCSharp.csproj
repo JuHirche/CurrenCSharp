@@ -9,7 +9,7 @@
 		<PackageId>CurrenCSharp</PackageId>
 		<Description>.NET library for money, wallets, and exchange-rate-aware currency operations.</Description>
 		<PackageTags>money;currency;finance;wallet;exchange-rate;dotnet</PackageTags>
-		<MinVerTagPrefix>CurrenCSharp_v</MinVerTagPrefix>
+		<MinVerTagPrefix>v</MinVerTagPrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
