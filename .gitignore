@@ -317,10 +317,6 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files
-*.ncb
-*.aps
-
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -419,3 +415,6 @@ FodyWeavers.xsd
 
 # AI Agent Stuff
 agents/code_review/*
+
+# Rider Stuff
+.idea/*
