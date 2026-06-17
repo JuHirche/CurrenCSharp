@@ -14,8 +14,6 @@ For exchange rates you implement `IExchangeRateProvider` and plug in your own so
 
 ## Installation
 
-> Note: Not done yet! The library is in early development and not yet published on NuGet. For now, clone the repository and reference the project directly. It should be available for installation via NuGet in the near future.
-
 Install the core package:
 
 ```bash
@@ -102,8 +100,8 @@ public interface IExchangeRateProvider
 IExchangeRateProvider provider = new ExampleExchangeRateProvider();
 DateTimeOffset exchangeRateDate = new(new DateTime(2020, 1, 1), TimeSpan.Zero);
 
-ExchangeRateContext latest     = await provider.GetLatestAsync();
-ExchangeRateContext historical = await provider.GetHistoricalAsync(exchangeRateDate);
+ExchangeRateContext latestExchangeRates = await provider.GetLatestAsync();
+ExchangeRateContext historicalExchangeRates = await provider.GetHistoricalAsync(exchangeRateDate);
 ```
 
 See
@@ -116,11 +114,11 @@ Use `.In(context)` to attach an exchange-rate context and enable conversion
 and cross-currency comparison.
 
 ```csharp
-ContextedMoney  latest_money     = eur_47_11.In(latest);
-ContextedMoney  historical_money = eur_47_11.In(historical);
+ContextedMoney  eur_47_11_with_latest_rates     = eur_47_11.In(latest);
+ContextedMoney  eur_47_11_with_historical_rates = eur_47_11.In(historical);
 
-ContextedWallet latest_wallet     = collection.In(latest);
-ContextedWallet historical_wallet = collection.In(historical);
+ContextedWallet wallet_with_latest_rates     = collection.In(latest);
+ContextedWallet wallet_with_historical_rates = collection.In(historical);
 ```
 
 ### 6. Currency Conversion
@@ -129,14 +127,14 @@ ContextedWallet historical_wallet = collection.In(historical);
 the bound context:
 
 ```csharp
-Money latest_money_usd     = latest_money.Convert(Iso4217.USD);     // USD 51.41
-Money historical_money_usd = historical_money.Convert(Iso4217.USD); // USD 42.08
+Money converted_eur_in_usd_with_latest_rates     = eur_47_11_with_latest_rates.Convert(Iso4217.USD);     // USD 51.41
+Money converted_eur_in_usd_with_historical_rates = eur_47_11_with_historical_rates.Convert(Iso4217.USD); // USD 42.08
 ```
 
 Rounding is controlled via `ConversionOptions`:
 
 ```csharp
-Money custom = latest_money.Convert(
+Money custom = eur_47_11_with_latest_rates.Convert(
     Iso4217.USD,
     new ConversionOptions(
         RoundResult: true,
@@ -154,8 +152,8 @@ target currency it uses the wallet's resolved currency (the single currency
 in the wallet, or the ambient default).
 
 ```csharp
-Money latest_total_KeyCurrency = latest_wallet.Total();            // EUR 140.10
-Money latest_total_usd         = latest_wallet.Total(Iso4217.USD); // USD 152.87
+Money total_of_wallet_in_default_currency_with_latest_rates = latest_wallet.Total();            // EUR 140.10
+Money total_of_wallet_in_usd_with_historical_rates          = latest_wallet.Total(Iso4217.USD); // USD 152.87
 ```
 
 ### 8. Arithmetic Operators
