@@ -28,7 +28,7 @@ public sealed partial class Wallet : IEnumerable<Money>
     /// </summary>
     /// <param name="moneys">The monetary values to include in the wallet.</param>
     /// <returns>A wallet containing the provided values.</returns>
-    public static Wallet Of(IReadOnlyCollection<Money> moneys) => new(MoneyCollection.Create(moneys));
+    public static Wallet Of(IEnumerable<Money> moneys) => new(MoneyCollection.Create(moneys));
 
     internal Currency ResolveCurrency() => _moneyCollection.SingleCurrencyOrDefault() ?? Currency.Default;
 
