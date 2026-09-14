@@ -24,6 +24,7 @@ internal class Iso4217Cache
             .Where(x => x.FieldType == typeof(Currency))
             .Select(x => (Currency)x.GetValue(null)!)
             .ToList();
+        currencies.AddRange(Iso4217.HistoricalCurrencies);
 
         return new CacheData(
             currencies.ToDictionary(x => x.AlphaCode),

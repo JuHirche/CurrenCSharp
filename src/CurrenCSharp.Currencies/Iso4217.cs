@@ -1,11 +1,11 @@
 ﻿namespace CurrenCSharp.Currencies;
 
-public static class Iso4217
+public static partial class Iso4217
 {
     private static readonly Iso4217Cache _cache = new();
 
     /// <summary>
-    /// Finds a currency by its ISO 4217 alpha code.
+    /// Finds a supported current or historical currency by its ISO 4217 alpha code.
     /// </summary>
     /// <param name="alphaCode">The three-letter ISO 4217 alpha code.</param>
     /// <returns>The currency that matches <paramref name="alphaCode"/>.</returns>
@@ -17,7 +17,7 @@ public static class Iso4217
     }
 
     /// <summary>
-    /// Finds a currency by its ISO 4217 numeric code.
+    /// Finds a supported current or historical currency by its ISO 4217 numeric code.
     /// </summary>
     /// <param name="numericCode">The ISO 4217 numeric code.</param>
     /// <returns>The currency that matches <paramref name="numericCode"/>.</returns>

@@ -23,6 +23,11 @@ Money usd23_42 = new(23.42m, Iso4217.USD); // USD 23.42
 Money chf47_11 = new(47.11m, Iso4217.CHF); // CHF 47.11
 Money chf23_42 = new(23.42m, Iso4217.CHF); // CHF 23.42
 
+// Historical currencies use the same lookup API but do not provide exchange rates.
+Currency deutscheMarkByAlpha   = Iso4217.FindByAlphaCode("DEM");
+Currency deutscheMarkByNumeric = Iso4217.FindByNumericCode(276); // Same instance as deutscheMarkByAlpha
+Money dem100 = new(100m, deutscheMarkByAlpha); // DEM 100.00
+
 // 3. Create Wallet objects
 // 3.1. Empty wallet with no money objects
 Wallet empty = Wallet.Empty;

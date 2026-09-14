@@ -268,8 +268,9 @@ Currency eur = new(alpha, numeric, 2);
 
 ## Optional ISO 4217 Package
 
-`CurrenCSharp.Currencies` ships predefined `Currency` instances for all
-ISO 4217 codes and a lookup cache:
+`CurrenCSharp.Currencies` ships predefined `Currency` instances for supported
+current ISO 4217 currencies and selected historical currencies. Both sets use
+the same lookup cache:
 
 ```csharp
 using CurrenCSharp.Currencies;
@@ -277,10 +278,26 @@ using CurrenCSharp.Currencies;
 Currency eur            = Iso4217.EUR;
 Currency foundByAlpha   = Iso4217.FindByAlphaCode("USD");
 Currency foundByNumeric = Iso4217.FindByNumericCode(840);
+
+Currency deutscheMarkByAlpha   = Iso4217.FindByAlphaCode("DEM");
+Currency deutscheMarkByNumeric = Iso4217.FindByNumericCode(276);
+Money restant = new(100m, deutscheMarkByAlpha);
 ```
 
-`FindByAlphaCode` and `FindByNumericCode` throw
-`InvalidOperationException` when the code is not defined in ISO 4217.
+Both DEM lookups return the same `Currency` instance. Historical currencies are
+lookup-only and do not have public fields such as `Iso4217.DEM`.
+
+The historical catalog is intentionally incomplete. It includes only codes in
+the Wikipedia/SIX historical intersection whose alpha code, numeric code, and
+ISO minor units are unambiguous and documented. Codes with reused numeric
+values (for example `PES`/`PEN`) or missing data are excluded. The data sources,
+the 2026-01-01 SIX snapshot, and the exact inclusion and exclusion lists are
+documented in [the data audit](docs/historical-currencies-data.md).
+
+`FindByAlphaCode` and `FindByNumericCode` throw `InvalidOperationException` when
+the code is not in the supported catalog. A catalog entry supplies no exchange
+rates. Historical conversion still requires an explicit context and a caller-
+provided `IExchangeRateProvider`.
 
 ## License
 
