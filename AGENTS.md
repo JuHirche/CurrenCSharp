@@ -44,4 +44,4 @@ that matches nothing in a project fails with exit code 8, so filter with `--proj
 
 Build without warnings, all tests green on every framework, new behavior tested (incl. edge
 and negative cases), README and example updated on public API changes, no unrelated changes.
-Run `.claude/agents/code-reviewer` on the diff before asking for a commit.
+Run the `code-reviewer` skill on the diff before asking for a commit.
