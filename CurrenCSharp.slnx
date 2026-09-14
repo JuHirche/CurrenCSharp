@@ -12,19 +12,9 @@
     <Project Path="test/CurrenCSharp.Test/CurrenCSharp.Test.csproj" Id="dab4d869-da78-4eb8-ae0b-2f23da195eca" />
   </Folder>
   <Folder Name="/_files/">
-    <File Path=".gitignore" />
-    <File Path="AGENTS.md" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
-    <File Path="LICENSE" />
     <File Path="NuGet.Config" />
     <File Path="README.md" />
-  </Folder>
-  <Folder Name="/_files/agents/">
-    <File Path="agents/code-reviewer.md" />
-  </Folder>
-  <Folder Name="/_files/workflows/">
-    <File Path=".github/workflows/build.yaml" />
-    <File Path=".github/workflows/publish.yaml" />
   </Folder>
 </Solution>
