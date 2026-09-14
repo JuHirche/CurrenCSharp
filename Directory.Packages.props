@@ -8,6 +8,7 @@
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="FsCheck" Version="3.4.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.4.0" />
     <PackageVersion Include="MinVer" Version="8.0.0" />
     <PackageVersion Include="Verify.XunitV3" Version="33.0.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
