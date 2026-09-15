@@ -10,89 +10,89 @@ public static partial class Iso4217
     /// </summary>
     public static class Historical
     {
-        /// <summary> Andorra (Andorran peseta) </summary>
+        /// <summary> Andorran peseta (Andorra) </summary>
         public static readonly Currency ADP = new(nameof(ADP), 020, 0);
-        /// <summary> Afghanistan (Afghan afghani, first series) </summary>
+        /// <summary> Afghan afghani (Afghanistan, first series) </summary>
         public static readonly Currency AFA = new(nameof(AFA), 004, 2);
-        /// <summary> Austria (Austrian schilling) </summary>
+        /// <summary> Austrian schilling (Austria) </summary>
         public static readonly Currency ATS = new(nameof(ATS), 040, 2);
-        /// <summary> Azerbaijan (Azerbaijani manat, first series) </summary>
+        /// <summary> Azerbaijani manat (Azerbaijan, first series) </summary>
         public static readonly Currency AZM = new(nameof(AZM), 031, 2);
-        /// <summary> Belgium (Belgian franc) </summary>
+        /// <summary> Belgian franc (Belgium) </summary>
         public static readonly Currency BEF = new(nameof(BEF), 056, 0);
-        /// <summary> Bulgaria (Bulgarian lev) </summary>
+        /// <summary> Bulgarian lev (Bulgaria) </summary>
         public static readonly Currency BGN = new(nameof(BGN), 975, 2);
-        /// <summary> Belarus (Belarusian ruble, 1992-1999) </summary>
+        /// <summary> Belarusian ruble (Belarus, 1992-1999) </summary>
         public static readonly Currency BYB = new(nameof(BYB), 112, 0);
-        /// <summary> Belarus (Belarusian ruble, 2000-2016) </summary>
+        /// <summary> Belarusian ruble (Belarus, 2000-2016) </summary>
         public static readonly Currency BYR = new(nameof(BYR), 974, 0);
-        /// <summary> Cuba (Cuban convertible peso) </summary>
+        /// <summary> Cuban convertible peso (Cuba) </summary>
         public static readonly Currency CUC = new(nameof(CUC), 931, 2);
-        /// <summary> Cyprus (Cypriot pound) </summary>
+        /// <summary> Cypriot pound (Cyprus) </summary>
         public static readonly Currency CYP = new(nameof(CYP), 196, 2);
-        /// <summary> Germany (Deutsche Mark) </summary>
+        /// <summary> Deutsche Mark (Germany) </summary>
         public static readonly Currency DEM = new(nameof(DEM), 276, 2);
-        /// <summary> Estonia (Estonian kroon) </summary>
+        /// <summary> Estonian kroon (Estonia) </summary>
         public static readonly Currency EEK = new(nameof(EEK), 233, 2);
-        /// <summary> Spain (Spanish peseta) </summary>
+        /// <summary> Spanish peseta (Spain) </summary>
         public static readonly Currency ESP = new(nameof(ESP), 724, 0);
-        /// <summary> Finland (Finnish markka) </summary>
+        /// <summary> Finnish markka (Finland) </summary>
         public static readonly Currency FIM = new(nameof(FIM), 246, 2);
-        /// <summary> France (French franc) </summary>
+        /// <summary> French franc (France) </summary>
         public static readonly Currency FRF = new(nameof(FRF), 250, 2);
-        /// <summary> Ghana (Ghanaian cedi, first series) </summary>
+        /// <summary> Ghanaian cedi (Ghana, first series) </summary>
         public static readonly Currency GHC = new(nameof(GHC), 288, 2);
-        /// <summary> Greece (Greek drachma) </summary>
+        /// <summary> Greek drachma (Greece) </summary>
         public static readonly Currency GRD = new(nameof(GRD), 300, 0);
-        /// <summary> Guinea-Bissau (Guinea-Bissau peso) </summary>
+        /// <summary> Guinea-Bissau peso (Guinea-Bissau) </summary>
         public static readonly Currency GWP = new(nameof(GWP), 624, 2);
-        /// <summary> Ireland (Irish pound) </summary>
+        /// <summary> Irish pound (Ireland) </summary>
         public static readonly Currency IEP = new(nameof(IEP), 372, 2);
-        /// <summary> Italy (Italian lira) </summary>
+        /// <summary> Italian lira (Italy) </summary>
         public static readonly Currency ITL = new(nameof(ITL), 380, 0);
-        /// <summary> Lithuania (Lithuanian litas) </summary>
+        /// <summary> Lithuanian litas (Lithuania) </summary>
         public static readonly Currency LTL = new(nameof(LTL), 440, 2);
-        /// <summary> Luxembourg (Luxembourg franc) </summary>
+        /// <summary> Luxembourg franc (Luxembourg) </summary>
         public static readonly Currency LUF = new(nameof(LUF), 442, 0);
-        /// <summary> Latvia (Latvian lats) </summary>
+        /// <summary> Latvian lats (Latvia) </summary>
         public static readonly Currency LVL = new(nameof(LVL), 428, 2);
-        /// <summary> Madagascar (Malagasy franc) </summary>
+        /// <summary> Malagasy franc (Madagascar) </summary>
         public static readonly Currency MGF = new(nameof(MGF), 450, 0);
-        /// <summary> Mauritania (Mauritanian ouguiya, first series) </summary>
+        /// <summary> Mauritanian ouguiya (Mauritania, first series) </summary>
         public static readonly Currency MRO = new(nameof(MRO), 478, 2);
-        /// <summary> Malta (Maltese lira) </summary>
+        /// <summary> Maltese lira (Malta) </summary>
         public static readonly Currency MTL = new(nameof(MTL), 470, 2);
-        /// <summary> Mozambique (Mozambican metical, first series) </summary>
+        /// <summary> Mozambican metical (Mozambique, first series) </summary>
         public static readonly Currency MZM = new(nameof(MZM), 508, 2);
-        /// <summary> Netherlands (Dutch guilder) </summary>
+        /// <summary> Dutch guilder (Netherlands) </summary>
         public static readonly Currency NLG = new(nameof(NLG), 528, 2);
-        /// <summary> Portugal (Portuguese escudo) </summary>
+        /// <summary> Portuguese escudo (Portugal) </summary>
         public static readonly Currency PTE = new(nameof(PTE), 620, 0);
-        /// <summary> Romania (Romanian leu, first series) </summary>
+        /// <summary> Romanian leu (Romania, first series) </summary>
         public static readonly Currency ROL = new(nameof(ROL), 642, 0);
-        /// <summary> Slovenia (Slovenian tolar) </summary>
+        /// <summary> Slovenian tolar (Slovenia) </summary>
         public static readonly Currency SIT = new(nameof(SIT), 705, 2);
-        /// <summary> Slovakia (Slovak koruna) </summary>
+        /// <summary> Slovak koruna (Slovakia) </summary>
         public static readonly Currency SKK = new(nameof(SKK), 703, 2);
-        /// <summary> Suriname (Surinamese guilder) </summary>
+        /// <summary> Surinamese guilder (Suriname) </summary>
         public static readonly Currency SRG = new(nameof(SRG), 740, 2);
-        /// <summary> Sao Tome and Principe (dobra, first series) </summary>
+        /// <summary> Sao Tome and Principe dobra (Sao Tome and Principe, first series) </summary>
         public static readonly Currency STD = new(nameof(STD), 678, 2);
-        /// <summary> Turkmenistan (Turkmenistani manat, first series) </summary>
+        /// <summary> Turkmenistani manat (Turkmenistan, first series) </summary>
         public static readonly Currency TMM = new(nameof(TMM), 795, 2);
-        /// <summary> Timor-Leste (Timorese escudo) </summary>
+        /// <summary> Timorese escudo (Timor-Leste) </summary>
         public static readonly Currency TPE = new(nameof(TPE), 626, 0);
-        /// <summary> Turkey (Turkish lira, first series) </summary>
+        /// <summary> Turkish lira (Turkey, first series) </summary>
         public static readonly Currency TRL = new(nameof(TRL), 792, 0);
-        /// <summary> Venezuela (Venezuelan bolivar) </summary>
+        /// <summary> Venezuelan bolivar (Venezuela) </summary>
         public static readonly Currency VEB = new(nameof(VEB), 862, 2);
-        /// <summary> Venezuela (Venezuelan bolivar fuerte) </summary>
+        /// <summary> Venezuelan bolivar fuerte (Venezuela) </summary>
         public static readonly Currency VEF = new(nameof(VEF), 937, 2);
-        /// <summary> Zambia (Zambian kwacha, first series) </summary>
+        /// <summary> Zambian kwacha (Zambia, first series) </summary>
         public static readonly Currency ZMK = new(nameof(ZMK), 894, 2);
-        /// <summary> Zimbabwe (Zimbabwean dollar, 2006-2008) </summary>
+        /// <summary> Zimbabwean dollar (Zimbabwe, 2006-2008) </summary>
         public static readonly Currency ZWN = new(nameof(ZWN), 942, 2);
-        /// <summary> Zimbabwe (Zimbabwean dollar, 2008-2009) </summary>
+        /// <summary> Zimbabwean dollar (Zimbabwe, 2008-2009) </summary>
         public static readonly Currency ZWR = new(nameof(ZWR), 935, 2);
     }
 }

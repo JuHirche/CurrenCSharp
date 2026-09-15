@@ -57,9 +57,9 @@ im OpenJDK-Datenbestand belegt:
 | ZWN | 942 | 2 | ZWR | 935 | 2 |
 
 Diese 42 Tupel sind als oeffentliche Felder der Klasse `Iso4217.Historical`
-verfuegbar. Der Laendername im XML-Kommentar jedes Feldes stammt aus der
-SIX List Three (Spalte "Entity"); wo ein Land mehrere Codes hat, ergaenzt der
-Kommentar den Waehrungsnamen oder den Zeitraum zur Unterscheidung.
+verfuegbar. Der XML-Kommentar jedes Feldes nennt zuerst den Waehrungsnamen und in
+Klammern das Land aus der SIX List Three (Spalte "Entity"); wo ein Land mehrere
+Codes hat, ergaenzt die Klammer den Zeitraum oder den Zusatz "first series".
 
 Zwei Eintraege verdienen einen Hinweis, weil sie in aelteren Katalogen noch als
 aktuell gefuehrt werden. Die SIX List Three (Stand `2026-01-01`) nennt fuer
