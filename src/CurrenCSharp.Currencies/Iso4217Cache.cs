@@ -19,14 +19,19 @@ internal class Iso4217Cache
 
     private static CacheData CreateCache()
     {
-        var currencies = typeof(Iso4217)
-            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(x => x.FieldType == typeof(Currency))
-            .Select(x => (Currency)x.GetValue(null)!)
+        var currencies = Enumerable.Concat(
+                GetCurrencyFields(typeof(Iso4217)),
+                GetCurrencyFields(typeof(Iso4217.Historical)))
             .ToList();
 
         return new CacheData(
             currencies.ToDictionary(x => x.AlphaCode),
             currencies.ToDictionary(x => x.NumericCode));
     }
+
+    private static IEnumerable<Currency> GetCurrencyFields(Type catalog) =>
+        catalog
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(x => x.FieldType == typeof(Currency))
+            .Select(x => (Currency)x.GetValue(null)!);
 }

@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace CurrenCSharp.Currencies.Test;
 
-public sealed class Iso4217Tests
+public sealed partial class Iso4217Tests
 {
     [Theory]
     [InlineData("EUR")]
@@ -141,8 +141,13 @@ public sealed class Iso4217Tests
     }
 
     private static IReadOnlyList<Currency> GetCatalogCurrencies() =>
-        [.. typeof(Iso4217)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.FieldType == typeof(Currency))
+        [.. Enumerable.Concat(
+                GetCurrencyFields(typeof(Iso4217)),
+                GetCurrencyFields(typeof(Iso4217.Historical)))
             .Select(f => (Currency)f.GetValue(null)!)];
+
+    private static IReadOnlyList<FieldInfo> GetCurrencyFields(Type catalog) =>
+        [.. catalog
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.FieldType == typeof(Currency))];
 }
