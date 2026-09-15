@@ -269,8 +269,9 @@ Currency eur = new(alpha, numeric, 2);
 ## Optional ISO 4217 Package
 
 `CurrenCSharp.Currencies` ships predefined `Currency` instances for supported
-current ISO 4217 currencies and selected historical currencies. Both sets use
-the same lookup cache:
+current ISO 4217 currencies and selected historical currencies. Current
+currencies are fields on `Iso4217`, historical currencies are fields on the
+nested class `Iso4217.Historical`. Both sets use the same lookup cache:
 
 ```csharp
 using CurrenCSharp.Currencies;
@@ -279,13 +280,15 @@ Currency eur            = Iso4217.EUR;
 Currency foundByAlpha   = Iso4217.FindByAlphaCode("USD");
 Currency foundByNumeric = Iso4217.FindByNumericCode(840);
 
+Currency deutscheMark          = Iso4217.Historical.DEM;
 Currency deutscheMarkByAlpha   = Iso4217.FindByAlphaCode("DEM");
 Currency deutscheMarkByNumeric = Iso4217.FindByNumericCode(276);
-Money restant = new(100m, deutscheMarkByAlpha);
+Money restant = new(100m, deutscheMark);
 ```
 
-Both DEM lookups return the same `Currency` instance. Historical currencies are
-lookup-only and do not have public fields such as `Iso4217.DEM`.
+The field and both DEM lookups return the same `Currency` instance. Historical
+currencies are deliberately kept apart from current ones: `Iso4217.DEM` does not
+exist, only `Iso4217.Historical.DEM`.
 
 The historical catalog is intentionally incomplete. It includes only codes in
 the Wikipedia/SIX historical intersection whose alpha code, numeric code, and

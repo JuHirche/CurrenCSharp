@@ -56,6 +56,17 @@ im OpenJDK-Datenbestand belegt:
 | VEF | 937 | 2 | ZMK | 894 | 2 |
 | ZWN | 942 | 2 | ZWR | 935 | 2 |
 
+Diese 42 Tupel sind als oeffentliche Felder der Klasse `Iso4217.Historical`
+verfuegbar. Der Laendername im XML-Kommentar jedes Feldes stammt aus der
+SIX List Three (Spalte "Entity"); wo ein Land mehrere Codes hat, ergaenzt der
+Kommentar den Waehrungsnamen oder den Zeitraum zur Unterscheidung.
+
+Zwei Eintraege verdienen einen Hinweis, weil sie in aelteren Katalogen noch als
+aktuell gefuehrt werden. Die SIX List Three (Stand `2026-01-01`) nennt fuer
+`BGN` (Bulgaria, Bulgarian Lev) das Rueckzugsdatum `2026-01-01` und fuer `CUC`
+(Cuba, Peso Convertible) das Rueckzugsdatum `2021-06`. Beide fehlen in der
+List One desselben Stands.
+
 Der ISO-Exponent kann von der nominellen Unterteilung abweichen. Beispielsweise
 nennt Wikipedia fuer `ADP`, `BEF`, `ESP`, `ITL`, `LUF` und `PTE` Untereinheiten,
 waehrend der ISO-Datenbestand einen Exponenten von 0 festlegt. Deshalb wurde die

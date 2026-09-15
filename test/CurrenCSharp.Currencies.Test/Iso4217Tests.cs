@@ -141,9 +141,13 @@ public sealed partial class Iso4217Tests
     }
 
     private static IReadOnlyList<Currency> GetCatalogCurrencies() =>
-        [.. typeof(Iso4217)
+        [.. Enumerable.Concat(
+                GetCurrencyFields(typeof(Iso4217)),
+                GetCurrencyFields(typeof(Iso4217.Historical)))
+            .Select(f => (Currency)f.GetValue(null)!)];
+
+    private static IReadOnlyList<FieldInfo> GetCurrencyFields(Type catalog) =>
+        [.. catalog
             .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.FieldType == typeof(Currency))
-            .Select(f => (Currency)f.GetValue(null)!),
-         .. Iso4217.HistoricalCurrencies];
+            .Where(f => f.FieldType == typeof(Currency))];
 }

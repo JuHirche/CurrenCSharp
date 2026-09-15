@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 
 namespace CurrenCSharp.Currencies.Test;
 
@@ -67,22 +68,132 @@ public sealed partial class Iso4217Tests
         Assert.Same(byAlpha, byNumeric);
     }
 
+    private static readonly string[] ApprovedHistoricalAlphaCodes =
+    [
+        "ADP", "AFA", "ATS", "AZM", "BEF", "BGN", "BYB", "BYR", "CUC", "CYP", "DEM", "EEK", "ESP", "FIM",
+        "FRF", "GHC", "GRD", "GWP", "IEP", "ITL", "LTL", "LUF", "LVL", "MGF", "MRO", "MTL", "MZM", "NLG",
+        "PTE", "ROL", "SIT", "SKK", "SRG", "STD", "TMM", "TPE", "TRL", "VEB", "VEF", "ZMK", "ZWN", "ZWR",
+    ];
+
+    public static TheoryData<string> HistoricalAlphaCodes => new(ApprovedHistoricalAlphaCodes);
+
     [Fact]
     public void HistoricalCatalog_WhenInspected_ContainsExactlyApprovedAlphaCodes()
     {
-        // Arrange
-        var expected = "ADP AFA ATS AZM BEF BGN BYB BYR CUC CYP DEM EEK ESP FIM FRF GHC GRD GWP "
-            + "IEP ITL LTL LUF LVL MGF MRO MTL MZM NLG PTE ROL SIT SKK SRG STD TMM TPE TRL "
-            + "VEB VEF ZMK ZWN ZWR";
-
         // Act
-        var result = Iso4217.HistoricalCurrencies
-            .Select(currency => currency.AlphaCode.Value)
+        var result = GetCurrencyFields(typeof(Iso4217.Historical))
+            .Select(field => field.Name)
             .Order()
             .ToArray();
 
         // Assert
-        Assert.Equal(expected.Split(' '), result);
+        Assert.Equal(ApprovedHistoricalAlphaCodes, result);
+    }
+
+    [Fact]
+    public void Historical_WhenFieldIsAccessedDirectly_ReturnsSameInstanceAsAlphaLookup()
+    {
+        // Act
+        var result = Iso4217.FindByAlphaCode("DEM");
+
+        // Assert
+        Assert.Same(Iso4217.Historical.DEM, result);
+    }
+
+    [Fact]
+    public void Historical_WhenFieldIsAccessedDirectly_ReturnsSameInstanceAsNumericLookup()
+    {
+        // Act
+        var result = Iso4217.FindByNumericCode(276);
+
+        // Assert
+        Assert.Same(Iso4217.Historical.DEM, result);
+    }
+
+    [Theory]
+    [MemberData(nameof(HistoricalAlphaCodes))]
+    public void Historical_WhenApprovedCodeIsLookedUp_ReturnsFieldInstance(string alphaCode)
+    {
+        // Arrange
+        var field = (Currency)typeof(Iso4217.Historical).GetField(alphaCode)!.GetValue(null)!;
+
+        // Act
+        var byAlpha = Iso4217.FindByAlphaCode(field.AlphaCode);
+        var byNumeric = Iso4217.FindByNumericCode(field.NumericCode);
+
+        // Assert
+        Assert.Same(field, byAlpha);
+        Assert.Same(field, byNumeric);
+    }
+
+    [Theory]
+    [MemberData(nameof(HistoricalAlphaCodes))]
+    public void Historical_WhenApprovedCodeIsInspected_DeclaresPublicStaticReadonlyField(string alphaCode)
+    {
+        // Act
+        var result = typeof(Iso4217.Historical).GetField(alphaCode, BindingFlags.Public | BindingFlags.Static);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsInitOnly);
+        Assert.Equal(typeof(Currency), result.FieldType);
+    }
+
+    [Theory]
+    [MemberData(nameof(HistoricalCurrencies))]
+    public void Historical_WhenApprovedCodeIsInspected_HasExpectedNumericCodeAndMinorUnits(
+        string alphaCode,
+        int numericCode,
+        byte minorUnits)
+    {
+        // Act
+        var result = (Currency)typeof(Iso4217.Historical).GetField(alphaCode)!.GetValue(null)!;
+
+        // Assert
+        Assert.Equal(alphaCode, result.AlphaCode.Value);
+        Assert.Equal(numericCode, result.NumericCode.Value);
+        Assert.Equal(minorUnits, result.MinorUnits);
+    }
+
+    [Fact]
+    public void Historical_WhenInspected_FieldNamesMatchAlphaCodes()
+    {
+        // Arrange
+        var fields = GetCurrencyFields(typeof(Iso4217.Historical));
+
+        // Act
+        var result = fields
+            .Where(field => field.Name != ((Currency)field.GetValue(null)!).AlphaCode.Value)
+            .Select(field => field.Name)
+            .ToList();
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void Historical_WhenComparedWithCurrentCatalog_SharesNoFieldName()
+    {
+        // Arrange
+        var currentNames = GetCurrencyFields(typeof(Iso4217)).Select(field => field.Name);
+        var historicalNames = GetCurrencyFields(typeof(Iso4217.Historical)).Select(field => field.Name);
+
+        // Act
+        var result = historicalNames.Intersect(currentNames).ToList();
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Theory]
+    [MemberData(nameof(HistoricalAlphaCodes))]
+    public void Catalog_WhenApprovedHistoricalCodeIsInspected_IsNotDeclaredOnIso4217(string alphaCode)
+    {
+        // Act
+        var result = typeof(Iso4217).GetField(alphaCode, BindingFlags.Public | BindingFlags.Static);
+
+        // Assert
+        Assert.Null(result);
     }
 
     [Theory]
@@ -112,7 +223,7 @@ public sealed partial class Iso4217Tests
     public void Money_WhenConstructedWithHistoricalCurrency_PreservesCurrency()
     {
         // Arrange
-        var deutscheMark = Iso4217.FindByAlphaCode("DEM");
+        var deutscheMark = Iso4217.Historical.DEM;
 
         // Act
         var result = new Money(100m, deutscheMark);
@@ -126,7 +237,7 @@ public sealed partial class Iso4217Tests
     {
         // Arrange
         using var _ = new CultureScope(CultureInfo.InvariantCulture);
-        var sut = new Money(100m, Iso4217.FindByAlphaCode("DEM"));
+        var sut = new Money(100m, Iso4217.Historical.DEM);
 
         // Act
         var result = sut.ToString();

@@ -2,6 +2,8 @@
 
 Status: Umgesetzt. Der verifizierte Datenbestand ist in
 [`historical-currencies-data.md`](historical-currencies-data.md) dokumentiert.
+Die Entscheidung gegen oeffentliche Felder wurde am 2026-09-15 revidiert, siehe
+[Nachtrag](#nachtrag-2026-09-15-oeffentliche-felder-unter-iso4217historical).
 
 ## Ziel
 
@@ -25,7 +27,8 @@ Beide Lookups liefern dieselbe Currency-Instanz.
 - Es gibt keinen separaten oeffentlichen historischen Katalog und keine neue
   Methode `FindByIsoCode(...)`.
 - Historische Waehrungen werden nur ueber Lookup angeboten, nicht als neue
-  oeffentliche Felder wie `Iso4217.DEM`.
+  oeffentliche Felder wie `Iso4217.DEM`. (Revidiert, siehe Nachtrag: Felder
+  unter `Iso4217.Historical`; `Iso4217.DEM` gibt es weiterhin nicht.)
 - Historische Waehrungen mit mehrdeutigen numerischen Codes werden vorerst
   nicht aufgenommen, auch nicht ausschliesslich ueber den Alpha-Lookup.
 - Der Datenumfang ist die Schnittmenge aus dem Wikipedia-Abschnitt
@@ -186,6 +189,31 @@ dotnet test
   Wikipedia/SIX-Schnittmenge.
 - Historische Waehrungen ohne eindeutigen numerischen Code.
 - Datumsabhaengige Waehrungsidentitaet oder Minor Units.
-- Neue oeffentliche historische Waehrungsfelder.
+- Neue oeffentliche historische Waehrungsfelder. (Revidiert, siehe Nachtrag.)
 - Automatische Waehrungsumstellungen oder eingebaute historische Kurse.
 - Aenderungen an Currency-Gleichheit, Hashing oder Geldarithmetik.
+
+## Nachtrag 2026-09-15: Oeffentliche Felder unter `Iso4217.Historical`
+
+Historische Waehrungen sollen genauso aufrufbar sein wie aktuelle, aber sichtbar
+von ihnen getrennt bleiben. Deshalb gibt es sie jetzt als oeffentliche Felder
+der verschachtelten statischen Klasse `Iso4217.Historical`:
+
+```csharp
+Money restant = new(100m, Iso4217.Historical.DEM);
+```
+
+- Die Felder folgen derselben Syntax wie die aktuellen Felder
+  (`public static readonly Currency DEM = new(nameof(DEM), 276, 2);`) und
+  liegen in `src/CurrenCSharp.Currencies/Iso4217.Historical.cs` (vorher
+  `Iso4217.HistoricalData.cs`).
+- Die interne Sammlung `HistoricalCurrencies` entfaellt. `Iso4217Cache` liest
+  die Felder von `Iso4217` und `Iso4217.Historical` per Reflection ein, sodass
+  Feld und beide Lookups dieselbe Instanz liefern und keine zweite Datenquelle
+  entsteht.
+- `FindByAlphaCode` und `FindByNumericCode` bleiben der gemeinsame Lookup fuer
+  beide Mengen; es gibt keinen separaten historischen Lookup und kein
+  oeffentliches `Historical.All`.
+- Die aeussere Klasse `Iso4217` erhaelt keine historischen Felder. Tests
+  sichern, dass die Feldmengen beider Klassen disjunkt sind.
+- Datenbestand, `Currency`-Modell und Geldarithmetik bleiben unveraendert.
